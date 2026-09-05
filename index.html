@@ -146,6 +146,28 @@ body[data-device-role="punch"] #currentPlanBadge{
   display:none !important;
 }
 </style>
+
+<style>
+body[data-device-role="punch"] .top{
+  padding:18px 22px 16px !important;
+  min-height:auto !important;
+}
+body[data-device-role="punch"] .top h2{
+  display:block !important;
+  margin:0 0 6px !important;
+  font-size:24px !important;
+  line-height:1.25 !important;
+  letter-spacing:.01em;
+}
+body[data-device-role="punch"] .top #clock{
+  font-size:22px !important;
+  margin:0 !important;
+  opacity:.95;
+}
+body[data-device-role="punch"] #punchTerminalBadge{
+  margin:10px 14px 8px !important;
+}
+</style>
 </head><body>
 <style>
 #yutoruPlanBar{
@@ -1198,6 +1220,145 @@ window.addEventListener("load",()=>{
 .dcWarn{background:#fff7ed;border:1px solid #fed7aa;border-radius:13px;padding:12px;font-size:13px;line-height:1.65}
 .dcCheck{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start;margin-top:13px;font-size:13px;line-height:1.6;font-weight:700}.dcCheck input{width:24px;height:24px;margin:1px 0 0}.dcCheck span{min-width:0;white-space:normal;overflow-wrap:anywhere}.dcActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}.dcActions button{padding:13px 8px;border:0;border-radius:11px;font-weight:800;font-size:15px}.dcActions button:disabled{cursor:not-allowed;opacity:.6}@media(max-width:390px){.dcBox{padding:16px}.dcActions{grid-template-columns:1fr}.dcCheck{font-size:14px}}
 </style>
+
+<style>
+#workRulePanel{
+  margin:14px;background:#fff;border:1px solid #cbd5e1;border-radius:18px;padding:16px;
+}
+#workRulePanel h3{margin:0 0 8px}
+#workRulePanel .wrHelp{font-size:12px;color:#64748b;line-height:1.6;margin-bottom:12px}
+.wrGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.wrField label{display:block;font-weight:800;font-size:13px;margin-bottom:5px}
+.wrField input,.wrField select{
+  width:100%;box-sizing:border-box;padding:11px;border:1px solid #cbd5e1;border-radius:10px;font-size:15px;background:#fff
+}
+.wrBlock{border:1px solid #e2e8f0;border-radius:14px;padding:12px;margin-top:10px}
+.wrBlock h4{margin:0 0 8px;font-size:15px}
+#saveWorkRules{
+  width:100%;margin-top:12px;border:0;border-radius:12px;padding:13px;
+  background:#0f766e;color:#fff;font-weight:800;font-size:15px
+}
+#workRuleMsg{font-size:12px;color:#0f766e;margin-top:8px}
+body[data-device-role="punch"] #workRulePanel{display:none!important}
+@media(max-width:520px){.wrGrid{grid-template-columns:1fr}}
+</style>
+
+<section id="workRulePanel">
+  <h3>🕒 勤務時間・手当設定</h3>
+  <p class="wrHelp">
+    24時間営業や早朝・深夜営業に対応する設定です。日付をまたぐ勤務にも対応できる前提で保存します。
+  </p>
+
+  <div class="wrBlock">
+    <h4>勤務可能時間</h4>
+    <div class="wrGrid">
+      <div class="wrField">
+        <label for="wrStart">開始</label>
+        <input id="wrStart" type="time" value="00:00">
+      </div>
+      <div class="wrField">
+        <label for="wrEnd">終了</label>
+        <input id="wrEnd" type="time" value="24:00">
+      </div>
+    </div>
+    <p class="wrHelp" style="margin:8px 0 0">販売版では 00:00〜24:00 を標準にします。</p>
+  </div>
+
+  <div class="wrBlock">
+    <h4>早朝手当</h4>
+    <div class="wrGrid">
+      <div class="wrField">
+        <label for="earlyStart">早朝開始</label>
+        <input id="earlyStart" type="time" value="05:00">
+      </div>
+      <div class="wrField">
+        <label for="earlyEnd">早朝終了</label>
+        <input id="earlyEnd" type="time" value="08:00">
+      </div>
+      <div class="wrField">
+        <label for="earlyMode">計算方法</label>
+        <select id="earlyMode">
+          <option value="none">対象外</option>
+          <option value="rate">率（%）</option>
+          <option value="hourly_fixed">1時間あたり固定額（円）</option>
+          <option value="shift_fixed">1勤務あたり固定額（円）</option>
+        </select>
+      </div>
+      <div class="wrField">
+        <label for="earlyValue">設定値</label>
+        <input id="earlyValue" type="number" min="0" step="0.01" value="0" placeholder="% または 円">
+      </div>
+    </div>
+  </div>
+
+  <div class="wrBlock">
+    <h4>深夜時間帯</h4>
+    <div class="wrGrid">
+      <div class="wrField">
+        <label for="nightStart2">深夜開始</label>
+        <input id="nightStart2" type="time" value="22:00">
+      </div>
+      <div class="wrField">
+        <label for="nightEnd2">深夜終了</label>
+        <input id="nightEnd2" type="time" value="05:00">
+      </div>
+    </div>
+    <p class="wrHelp" style="margin:8px 0 0">
+      22:00〜翌5:00のように日付をまたぐ時間帯として扱う設計です。
+    </p>
+  </div>
+
+  <button id="saveWorkRules" type="button">勤務・手当設定を保存</button>
+  <div id="workRuleMsg"></div>
+</section>
+
+<script>
+(() => {
+  const KEY = "yutoru_work_rules_v18";
+  const $ = id => document.getElementById(id);
+
+  function load(){
+    try{
+      return JSON.parse(localStorage.getItem(KEY) || "{}");
+    }catch(e){ return {}; }
+  }
+
+  function fill(){
+    const d = load();
+    if($("wrStart")) $("wrStart").value = d.workStart || "00:00";
+    if($("wrEnd")) $("wrEnd").value = d.workEnd || "24:00";
+    if($("earlyStart")) $("earlyStart").value = d.earlyStart || "05:00";
+    if($("earlyEnd")) $("earlyEnd").value = d.earlyEnd || "08:00";
+    if($("earlyMode")) $("earlyMode").value = d.earlyMode || "none";
+    if($("earlyValue")) $("earlyValue").value = Number(d.earlyValue || 0);
+    if($("nightStart2")) $("nightStart2").value = d.nightStart || "22:00";
+    if($("nightEnd2")) $("nightEnd2").value = d.nightEnd || "05:00";
+  }
+
+  function save(){
+    const d = {
+      workStart: $("wrStart")?.value || "00:00",
+      workEnd: $("wrEnd")?.value || "24:00",
+      earlyStart: $("earlyStart")?.value || "05:00",
+      earlyEnd: $("earlyEnd")?.value || "08:00",
+      earlyMode: $("earlyMode")?.value || "none",
+      earlyValue: Number($("earlyValue")?.value || 0),
+      nightStart: $("nightStart2")?.value || "22:00",
+      nightEnd: $("nightEnd2")?.value || "05:00"
+    };
+    localStorage.setItem(KEY, JSON.stringify(d));
+    const msg = $("workRuleMsg");
+    if(msg) msg.textContent = "保存しました ✓";
+    window.YUTORU_WORK_RULES = d;
+  }
+
+  window.addEventListener("load", () => {
+    fill();
+    $("saveWorkRules")?.addEventListener("click", save);
+    window.YUTORU_WORK_RULES = load();
+  });
+})();
+</script>
 <section id="deviceManager">
  <h3>🔐 端末管理</h3>
  <p class="dmNote">1店舗につき、店舗打刻端末1台＋管理者端末2台まで登録できます。</p>
