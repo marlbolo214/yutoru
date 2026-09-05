@@ -242,8 +242,8 @@ body[data-device-role="punch"] #punchTerminalBadge{display:block}
     <div class="overviewBox"><small>支給額（交通費込み） 合計</small><b id="sumTotal">¥0</b></div>
   </div>
 </div>
-<div id="allmonthlyCards" class="summaryCards"></div><div class="tw closingTable"><table><thead><tr><th>スタッフ</th><th>出勤日数</th><th>時給</th><th>実働</th><th>休憩</th><th>残業</th><th>残業割増</th><th>深夜</th><th>深夜割増</th><th>給与目安</th></tr></thead><tbody id="allmonthly"></tbody></table></div><div class="row actions"><button onclick="csv()">CSV出力</button><button onclick="printReport()">PDF/印刷</button></div></div></div>
-<div id="printAll" class="c hide"><h2>全スタッフ 月間勤怠・給与集計</h2><p id="printPeriod"></p><div class="tw"><table><thead><tr><th>スタッフ</th><th>出勤日数</th><th>時給</th><th>実働</th><th>休憩</th><th>残業</th><th>残業割増</th><th>深夜</th><th>深夜割増</th><th>給与目安</th></tr></thead><tbody id="printBody"></tbody><tfoot><tr class="total"><td colspan="9">人件費合計</td><td id="printPayrollTotal">¥0</td></tr></tfoot></table></div></div>
+<div id="allmonthlyCards" class="summaryCards"></div><div class="tw closingTable"><table><thead><tr><th>スタッフ</th><th>出勤日数</th><th>時給</th><th>実働</th><th>休憩</th><th>残業</th><th>残業割増</th><th>深夜</th><th>深夜割増</th><th>早朝手当</th><th>給与目安</th></tr></thead><tbody id="allmonthly"></tbody></table></div><div class="row actions"><button onclick="csv()">CSV出力</button><button onclick="printReport()">PDF/印刷</button></div></div></div>
+<div id="printAll" class="c hide"><h2>全スタッフ 月間勤怠・給与集計</h2><p id="printPeriod"></p><div class="tw"><table><thead><tr><th>スタッフ</th><th>出勤日数</th><th>時給</th><th>実働</th><th>休憩</th><th>残業</th><th>残業割増</th><th>深夜</th><th>深夜割増</th><th>早朝手当</th><th>給与目安</th></tr></thead><tbody id="printBody"></tbody><tfoot><tr class="total"><td colspan="10">人件費合計</td><td id="printPayrollTotal">¥0</td></tr></tfoot></table></div></div>
 </div><script>
 // ZUCCA Attendance v44 rename persistence fix
 // ZUCCA Attendance v41 original ZUCCA duplicate staff cleanup
@@ -519,7 +519,61 @@ async function saveTransports(){
   }
 }
 
-function payrollDetail(t,wage,transportPerDay=0){
+
+function yutoruWorkRules(){
+  try{return JSON.parse(localStorage.getItem("yutoru_work_rules_v18")||"{}")}catch(e){return {}}
+}
+function _ymins(v){
+  if(!v)return 0;
+  let p=String(v).split(":").map(Number);
+  return (p[0]||0)*60+(p[1]||0);
+}
+function earlyMinutesForRows(rows){
+  let r=yutoruWorkRules(), es=_ymins(r.earlyStart||"05:00"), ee=_ymins(r.earlyEnd||"08:00");
+  let aa=(rows||[]).map(v=>[v[0],roundPunchTime(v[0],v[1])]);
+  if(!aa.some(v=>v[0]==="退勤")){
+    let ins=[]; aa.forEach((v,i)=>{if(v[0]==="出勤")ins.push(i)});
+    if(ins.length>=2) aa[ins[ins.length-1]][0]="退勤";
+  }
+  let ci=aa.find(v=>v[0]==="出勤"), co=[...aa].reverse().find(v=>v[0]==="退勤");
+  if(!ci||!co)return 0;
+  let st=_ymins(ci[1]), en=_ymins(co[1]); if(en<st)en+=1440;
+
+  let breaks=[], open=null;
+  for(let v of aa){
+    let m=_ymins(v[1]); if(m<st)m+=1440;
+    if(v[0]==="休憩開始") open=m;
+    if(v[0]==="休憩終了" && open!=null){breaks.push([open,m<open?m+1440:m]); open=null}
+  }
+
+  function inEarly(minute){
+    let md=((minute%1440)+1440)%1440;
+    if(es===ee) return false;
+    return es<ee ? (md>=es && md<ee) : (md>=es || md<ee);
+  }
+  function inBreak(minute){return breaks.some(b=>minute>=b[0] && minute<b[1])}
+
+  let n=0;
+  for(let m=st;m<en;m++) if(inEarly(m) && !inBreak(m)) n++;
+  return Math.floor(n/15)*15;
+}
+function staffEarlySummary(x,name,wage){
+  let rules=yutoruWorkRules(), mode=rules.earlyMode||"none", value=Number(rules.earlyValue||0);
+  let [st,en]=range(),d=new Date(st),mins=0,days=0;
+  while(d<=en){
+    let rows=x[name]?.[iso(d)]||[];
+    let em=earlyMinutesForRows(rows);
+    if(em>0){mins+=em;days++}
+    d.setDate(d.getDate()+1);
+  }
+  let amount=0;
+  if(mode==="rate") amount=mins/60*Number(wage||0)*(value/100);
+  else if(mode==="hourly_fixed") amount=mins/60*value;
+  else if(mode==="shift_fixed") amount=days*value;
+  return {minutes:mins,days,amount,mode,value};
+}
+
+function payrollDetail(t,wage,transportPerDay=0,earlyAllowance=0){
   wage=Number(wage)||0;
   transportPerDay=Number(transportPerDay)||0;
   let work=t[1]||0,ot=t[3]||0,night=t[4]||0;work=Math.floor(work/15)*15;
@@ -527,7 +581,7 @@ function payrollDetail(t,wage,transportPerDay=0){
   let overtimePremium=ot/60*wage*.25;
   let nightPremium=night/60*wage*.25;
   let transport=(t[0]||0)*transportPerDay;
-  return {base,overtimePremium,nightPremium,transport,transportPerDay,total:base+overtimePremium+nightPremium+transport};
+  earlyAllowance=Number(earlyAllowance)||0; return {base,overtimePremium,nightPremium,earlyAllowance,transport,transportPerDay,total:base+overtimePremium+nightPremium+earlyAllowance+transport};
 }
 function payrollFromTotals(t,wage,transportPerDay=0){return payrollDetail(t,wage,transportPerDay).total}
 function renderWages(){let box=Q('wageList');if(!box)return;let w=wages();box.replaceChildren();staff().forEach(n=>{let row=document.createElement('div');row.className='sr';let sp=document.createElement('span');sp.textContent=n;let inp=document.createElement('input');inp.type='number';inp.min='0';inp.step='10';inp.inputMode='numeric';inp.value=w[n]||'';inp.placeholder='時給';inp.dataset.staff=n;inp.style.width='140px';row.append(sp,inp);box.appendChild(row)})}
@@ -649,11 +703,11 @@ function renderTransportRows(){
 
 function allSummary(){
   let x=JSON.parse(localStorage.getItem(DK)||'{}'),w=wages(),tr=transports();
-  let grand=0,sumBase=0,sumOt=0,sumNight=0,sumTransport=0,tableRows=[],cards=[];
+  let grand=0,sumBase=0,sumOt=0,sumNight=0,sumEarly=0,sumTransport=0,tableRows=[],cards=[];
   let members=staff();
   members.forEach(name=>{
-    let t=staffTotal(x,name),rate=Number(w[name]||0),transportPerDay=Number(tr[name]||0),p=payrollDetail(t,rate,transportPerDay);
-    grand+=p.total;sumBase+=p.base;sumOt+=p.overtimePremium;sumNight+=p.nightPremium;sumTransport+=p.transport;
+    let t=staffTotal(x,name),rate=Number(w[name]||0),transportPerDay=Number(tr[name]||0),early=staffEarlySummary(x,name,rate),p=payrollDetail(t,rate,transportPerDay,early.amount);
+    grand+=p.total;sumBase+=p.base;sumOt+=p.overtimePremium;sumNight+=p.nightPremium;sumEarly+=p.earlyAllowance;sumTransport+=p.transport;
     tableRows.push('<tr><td>'+safe(name)+'</td><td>'+t[0]+'</td><td>'+yen(rate)+'</td><td>'+fmt(t[1])+'</td><td>'+fmt(t[2])+'</td><td>'+fmt(t[3])+'</td><td>'+yen(p.overtimePremium)+'</td><td>'+fmt(t[4])+'</td><td>'+yen(p.nightPremium)+'</td><td>'+yen(p.total)+'</td></tr>');
     let initial=safe(name).charAt(0);
     cards.push(
@@ -672,10 +726,10 @@ function allSummary(){
         '<div class="premiumBox">'+
           '<div class="premiumItem pBase"><small>基本分（実働×時給）</small><b>'+yen(p.base)+'</b></div>'+
           '<div class="premiumItem pOt"><small>残業割増分（+25%）</small><b>'+yen(p.overtimePremium)+'</b></div>'+
-          '<div class="premiumItem pNight"><small>深夜割増分（+25%）</small><b>'+yen(p.nightPremium)+'</b></div>'+
+          '<div class="premiumItem pNight"><small>深夜割増分（+25%）</small><b>'+yen(p.nightPremium)+'</b></div>'+'<div class="premiumItem"><small>早朝手当（'+fmt(early.minutes)+'）</small><b>'+yen(p.earlyAllowance)+'</b></div>'+
           '<div class="premiumItem pTransport"><small>交通費（'+t[0]+'日 × '+yen(p.transportPerDay)+'）</small><b>'+yen(p.transport)+'</b></div>'+
         '</div>'+
-        '<div class="payBreak">計算式：基本分 '+yen(p.base)+' ＋ 残業割増 '+yen(p.overtimePremium)+' ＋ 深夜割増 '+yen(p.nightPremium)+' ＋ 交通費 '+yen(p.transport)+' ＝ <b>支給額（交通費込み） '+yen(p.total)+'</b></div>'+
+        '<div class="payBreak">計算式：基本分 '+yen(p.base)+' ＋ 残業割増 '+yen(p.overtimePremium)+' ＋ 深夜割増 '+yen(p.nightPremium)+' ＋ 早朝手当 '+yen(p.earlyAllowance)+' ＋ 交通費 '+yen(p.transport)+' ＝ <b>支給額（交通費込み） '+yen(p.total)+'</b></div>'+
       '</div>'
     );
   });
@@ -1243,6 +1297,86 @@ body[data-device-role="punch"] #workRulePanel{display:none!important}
 @media(max-width:520px){.wrGrid{grid-template-columns:1fr}}
 </style>
 
+
+<style>
+#demoPayrollPanel{margin:14px;background:#fff;border:1px solid #cbd5e1;border-radius:18px;padding:16px}
+#demoPayrollPanel h3{margin:0 0 8px}
+#demoPayrollPanel p{font-size:13px;color:#64748b;line-height:1.6}
+#demoPayrollPanel button{width:100%;border:0;border-radius:12px;padding:13px;background:#0f766e;color:#fff;font-weight:800}
+#demoPayslip{margin-top:12px;border:1px solid #e2e8f0;border-radius:14px;padding:14px;display:none}
+#demoPayslip .line{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #f1f5f9}
+#demoPayslip .line:last-child{border-bottom:0}
+#demoPayslip .total{font-size:18px;font-weight:900}
+body[data-device-role="punch"] #demoPayrollPanel{display:none!important}
+</style>
+<section id="demoPayrollPanel">
+  <h3>🧪 デモ給与明細</h3>
+  <p>テスト用スタッフ1名と勤務データを自動で追加し、早朝手当・深夜割増を含む給与明細を確認できます。</p>
+  <button id="seedDemoPayroll" type="button">デモスタッフと勤務を作成</button>
+  <div id="demoPayslip"></div>
+</section>
+
+<script>
+(() => {
+  const $=id=>document.getElementById(id);
+  function seed(){
+    const name="デモ太郎";
+    let staffList=staff();
+    if(!staffList.includes(name)){staffList.push(name);localStorage.setItem(SK,JSON.stringify(staffList))}
+    let w=wages();w[name]=1200;localStorage.setItem(WK,JSON.stringify(w));
+    let tr=transports();tr[name]=500;localStorage.setItem(TK,JSON.stringify(tr));
+
+    // 今の締め期間内に3日分のサンプル勤務
+    let [ps,pe]=range();
+    let dates=[];
+    for(let i=0;i<3;i++){let d=new Date(ps);d.setDate(d.getDate()+10+i);if(d<=pe)dates.push(iso(d))}
+    if(dates.length<3){dates=[iso(ps),iso(new Date(ps.getTime()+86400000)),iso(new Date(ps.getTime()+172800000))]}
+
+    let x=JSON.parse(localStorage.getItem(DK)||"{}"); x[name]??={};
+    x[name][dates[0]]=[["出勤","05:00"],["退勤","10:00"]];
+    x[name][dates[1]]=[["出勤","21:00"],["退勤","02:00"]];
+    x[name][dates[2]]=[["出勤","06:00"],["休憩開始","10:00"],["休憩終了","10:45"],["退勤","15:00"]];
+    localStorage.setItem(DK,JSON.stringify(x));
+
+    // 早朝手当をテストしやすい初期値に
+    let rules=yutoruWorkRules();
+    rules.earlyStart=rules.earlyStart||"05:00";
+    rules.earlyEnd=rules.earlyEnd||"08:00";
+    rules.earlyMode=rules.earlyMode==="none"?"hourly_fixed":(rules.earlyMode||"hourly_fixed");
+    rules.earlyValue=Number(rules.earlyValue||100);
+    localStorage.setItem("yutoru_work_rules_v18",JSON.stringify(rules));
+
+    rs(); allSummary(); renderDemoPayslip();
+  }
+
+  function renderDemoPayslip(){
+    const name="デモ太郎";
+    if(!staff().includes(name)) return;
+    let x=JSON.parse(localStorage.getItem(DK)||"{}"), rate=Number(wages()[name]||0), t=staffTotal(x,name);
+    let early=staffEarlySummary(x,name,rate), p=payrollDetail(t,rate,Number(transports()[name]||0),early.amount);
+    let box=$("demoPayslip"); if(!box)return;
+    box.style.display="block";
+    box.innerHTML=
+      '<div style="font-weight:900;font-size:18px;margin-bottom:8px">給与明細（デモ）｜'+name+'</div>'+
+      '<div class="line"><span>時給</span><b>'+yen(rate)+'</b></div>'+
+      '<div class="line"><span>出勤日数</span><b>'+t[0]+'日</b></div>'+
+      '<div class="line"><span>実働</span><b>'+fmt(t[1])+'</b></div>'+
+      '<div class="line"><span>残業</span><b>'+fmt(t[3])+'</b></div>'+
+      '<div class="line"><span>深夜</span><b>'+fmt(t[4])+'</b></div>'+
+      '<div class="line"><span>早朝対象</span><b>'+fmt(early.minutes)+'</b></div>'+
+      '<div class="line"><span>基本給</span><b>'+yen(p.base)+'</b></div>'+
+      '<div class="line"><span>残業割増</span><b>'+yen(p.overtimePremium)+'</b></div>'+
+      '<div class="line"><span>深夜割増</span><b>'+yen(p.nightPremium)+'</b></div>'+
+      '<div class="line"><span>早朝手当</span><b>'+yen(p.earlyAllowance)+'</b></div>'+
+      '<div class="line"><span>交通費</span><b>'+yen(p.transport)+'</b></div>'+
+      '<div class="line total"><span>支給合計</span><b>'+yen(p.total)+'</b></div>';
+  }
+  window.addEventListener("load",()=>{
+    $("seedDemoPayroll")?.addEventListener("click",seed);
+    renderDemoPayslip();
+  });
+})();
+</script>
 <section id="workRulePanel">
   <h3>🕒 勤務時間・手当設定</h3>
   <p class="wrHelp">
