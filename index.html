@@ -160,6 +160,15 @@
   <button id="openPlusSettingsFromPanel" type="button">保険・控除設定を開く</button>
 </div>
 
+
+<style>
+#punchTerminalBadge{
+  display:none;margin:10px 14px 0;padding:10px 12px;border-radius:12px;
+  background:#ecfdf5;color:#0f766e;font-weight:800;font-size:13px
+}
+body[data-device-role="punch"] #punchTerminalBadge{display:block}
+</style>
+<div id="punchTerminalBadge">🏪 店舗打刻端末モード｜スタッフの打刻専用</div>
 <div class="top"><h2>かんたん勤怠管理</h2><div id="clock"></div></div><div class="w">
 <div class="c no-print"><b>スタッフ</b><select id="staff"><option value="">読み込み中...</option></select><p id="status"></p><p id="cloudStatus" class="note">クラウド：未接続（端末内保存で利用中）</p><div class="g"><button class="in" onclick="stamp('出勤')">出勤</button><button class="bs" onclick="stamp('休憩開始')">休憩開始</button><button class="be" onclick="stamp('休憩終了')">休憩終了</button><button class="out" onclick="stamp('退勤')">退勤</button></div><p class="note">出勤は15分単位で繰り上げ／休憩開始は切り下げ／休憩終了は繰り上げ／退勤は切り下げ。修正画面・保存・給与計算も同じ時刻で統一</p></div>
 <div class="c"><b>本日の勤務</b><div id="log"></div><div class="m"><div class="metric">実働<b id="work">--</b></div><div class="metric">休憩<b id="brk">--</b></div><div class="metric">残業（8時間超）<b id="ot">--</b></div><div class="metric">深夜（22時以降）<b id="night">--</b></div></div></div>
@@ -1356,32 +1365,30 @@ window.addEventListener("load",()=>{
     applyDevicePermissions();
   }
 
-  function hideByText(text){
-    document.querySelectorAll("button,a").forEach(el => {
-      if((el.textContent || "").includes(text)) el.style.display = "none";
-    });
-  }
-
   function applyDevicePermissions(){
     const td = loadThisDevice();
-    const adminArea = [...document.querySelectorAll("section,div")].find(el =>
-      (el.textContent || "").includes("管理者メニュー") &&
-      !el.id?.includes("device")
-    );
 
+    // Identify only the exact management areas.
+    const monthlyCard = document.getElementById("monthly")?.closest(".c");
+    const adminCard = document.getElementById("pin")?.closest(".c");
     const deviceManager = $("deviceManager");
+    const setupBtn = $("masterSetupBtn");
+    const setupModal = $("masterSetup");
+    const plusPanel = $("plusAdminPanel");
+    const planSelect = $("topPlanSelect");
 
-    if(td && td.role === "punch"){
-      if(adminArea) adminArea.style.display = "none";
-      if(deviceManager) deviceManager.style.display = "none";
-      hideByText("初期設定");
-      hideByText("給与");
-      hideByText("修正");
-      hideByText("管理");
-    } else {
-      if(adminArea) adminArea.style.display = "";
-      if(deviceManager) deviceManager.style.display = "";
-    }
+    const isPunch = !!(td && td.role === "punch");
+
+    if(monthlyCard) monthlyCard.style.display = isPunch ? "none" : "";
+    if(adminCard) adminCard.style.display = isPunch ? "none" : "";
+    if(deviceManager) deviceManager.style.display = isPunch ? "none" : "";
+    if(setupBtn) setupBtn.style.display = isPunch ? "none" : "";
+    if(setupModal && isPunch) setupModal.classList.remove("open");
+    if(plusPanel) plusPanel.style.display = isPunch ? "none" : (window.SALES_TENANT?.plan === "plus" ? "block" : "none");
+    if(planSelect) planSelect.style.display = isPunch ? "none" : "";
+
+    // IMPORTANT: the staff selector, punch buttons, and today's work card stay visible.
+    document.body.dataset.deviceRole = td?.role || "unregistered";
   }
 
   window.addEventListener("load", () => {
