@@ -1582,4 +1582,128 @@ body[data-device-role="punch"] #workRulePanel{display:none!important}
   });
 })();
 </script>
+
+<style>
+#deviceModeChangeBtn{
+  display:none;
+  position:fixed;
+  right:14px;
+  bottom:88px;
+  z-index:8500;
+  border:0;
+  border-radius:999px;
+  padding:12px 16px;
+  background:#0f172a;
+  color:#fff;
+  font-weight:800;
+  font-size:14px;
+  box-shadow:0 8px 24px rgba(15,23,42,.25);
+}
+body[data-device-role="punch"] #deviceModeChangeBtn{display:block}
+#deviceModeModal{
+  position:fixed;inset:0;background:rgba(0,0,0,.55);
+  display:none;align-items:center;justify-content:center;
+  padding:16px;z-index:13000;
+}
+#deviceModeModal.open{display:flex}
+#deviceModeModal .dmmBox{
+  width:min(520px,100%);background:#fff;border-radius:20px;padding:18px;
+}
+#deviceModeModal input,#deviceModeModal select{
+  width:100%;box-sizing:border-box;padding:12px;border:1px solid #cbd5e1;border-radius:10px;font-size:16px;margin-top:6px;
+}
+#deviceModeModal .dmmActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+#deviceModeModal .dmmActions button{border:0;border-radius:11px;padding:12px;font-weight:800}
+</style>
+<button id="deviceModeChangeBtn" type="button">⚙️ 端末設定</button>
+
+<div id="deviceModeModal">
+  <div class="dmmBox">
+    <h2 style="margin-top:0">端末モード変更</h2>
+    <p style="font-size:13px;color:#64748b;line-height:1.6">
+      管理者PINを入力すると、この端末の役割を変更できます。
+    </p>
+    <label style="font-weight:800">管理者PIN
+      <input id="deviceModePin" type="password" inputmode="numeric" placeholder="管理者PIN">
+    </label>
+    <label style="display:block;font-weight:800;margin-top:12px">変更後の端末
+      <select id="deviceModeRole">
+        <option value="punch">店舗打刻端末</option>
+        <option value="admin">管理者端末</option>
+      </select>
+    </label>
+    <div class="dmmActions">
+      <button id="deviceModeCancel" type="button" style="background:#e2e8f0">キャンセル</button>
+      <button id="deviceModeSave" type="button" style="background:#0f766e;color:#fff">変更する</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const THIS_DEVICE_KEY = "yutoru_this_device_v14";
+  const DEVICE_LIST_KEY = "yutoru_demo_devices_v14";
+  const ADMIN_PIN = "1234"; // 開発デモ用。販売版ではサーバー認証に置換。
+
+  function loadThisDevice(){
+    try{return JSON.parse(localStorage.getItem(THIS_DEVICE_KEY)||"null")}catch(e){return null}
+  }
+  function loadDevices(){
+    try{return JSON.parse(localStorage.getItem(DEVICE_LIST_KEY)||"[]")}catch(e){return []}
+  }
+  function saveDevices(d){localStorage.setItem(DEVICE_LIST_KEY,JSON.stringify(d))}
+  function saveThisDevice(d){localStorage.setItem(THIS_DEVICE_KEY,JSON.stringify(d))}
+
+  window.addEventListener("load",()=>{
+    $("deviceModeChangeBtn")?.addEventListener("click",()=>{
+      const td=loadThisDevice();
+      if($("deviceModeRole")) $("deviceModeRole").value=td?.role||"punch";
+      if($("deviceModePin")) $("deviceModePin").value="";
+      $("deviceModeModal")?.classList.add("open");
+    });
+
+    $("deviceModeCancel")?.addEventListener("click",()=>{
+      $("deviceModeModal")?.classList.remove("open");
+    });
+
+    $("deviceModeSave")?.addEventListener("click",()=>{
+      const pin=$("deviceModePin")?.value||"";
+      if(pin!==ADMIN_PIN){
+        alert("管理者PINが違います。");
+        return;
+      }
+      const td=loadThisDevice();
+      if(!td){
+        alert("この端末は未登録です。");
+        return;
+      }
+      const nextRole=$("deviceModeRole")?.value||"punch";
+      const d=loadDevices();
+
+      if(nextRole==="admin"){
+        const otherAdmins=d.filter(x=>x.role==="admin" && x.id!==td.id);
+        if(otherAdmins.length>=2){
+          alert("管理者端末は2台までです。");
+          return;
+        }
+      }
+      if(nextRole==="punch"){
+        const otherPunch=d.filter(x=>x.role==="punch" && x.id!==td.id);
+        if(otherPunch.length>=1){
+          alert("店舗打刻端末は1台までです。");
+          return;
+        }
+      }
+
+      const updated={...td,role:nextRole};
+      const next=d.map(x=>x.id===td.id?updated:x);
+      saveDevices(next);
+      saveThisDevice(updated);
+      $("deviceModeModal")?.classList.remove("open");
+      location.reload();
+    });
+  });
+})();
+</script>
 </body></html>
