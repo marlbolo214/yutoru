@@ -1170,9 +1170,9 @@ window.addEventListener("load",()=>{
 .dmCard b{display:block}.dmState{font-size:12px;color:#64748b;margin-top:3px}
 .dmBtn{width:100%;border:0;border-radius:12px;padding:12px;font-weight:800;background:#0f766e;color:#fff}
 #deviceConfirm{position:fixed;inset:0;background:#0008;z-index:12000;display:none;align-items:center;justify-content:center;padding:16px}
-#deviceConfirm.open{display:flex}.dcBox{background:#fff;width:min(560px,100%);max-height:90vh;overflow:auto;border-radius:20px;padding:18px}
+#deviceConfirm.open{display:flex}.dcBox{background:#fff;width:min(560px,100%);max-height:90vh;overflow:auto;border-radius:20px;padding:18px;padding-bottom:calc(22px + env(safe-area-inset-bottom));overflow-wrap:anywhere}
 .dcWarn{background:#fff7ed;border:1px solid #fed7aa;border-radius:13px;padding:12px;font-size:13px;line-height:1.65}
-.dcActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.dcActions button{padding:12px;border:0;border-radius:11px;font-weight:800}
+.dcCheck{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start;margin-top:13px;font-size:13px;line-height:1.6;font-weight:700}.dcCheck input{width:24px;height:24px;margin:1px 0 0}.dcCheck span{min-width:0;white-space:normal;overflow-wrap:anywhere}.dcActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}.dcActions button{padding:13px 8px;border:0;border-radius:11px;font-weight:800;font-size:15px}@media(max-width:390px){.dcBox{padding:16px}.dcActions{grid-template-columns:1fr}.dcCheck{font-size:14px}}
 </style>
 <section id="deviceManager">
  <h3>🔐 端末管理</h3>
@@ -1201,8 +1201,8 @@ window.addEventListener("load",()=>{
   <label style="display:block;margin-top:10px;font-weight:800">端末名
    <input id="dcName" placeholder="例：店舗iPad／オーナーiPhone" style="width:100%;box-sizing:border-box;padding:11px;margin-top:5px;border:1px solid #cbd5e1;border-radius:10px">
   </label>
-  <label style="display:flex;gap:8px;align-items:flex-start;margin-top:13px;font-size:13px">
-   <input id="dcAgree" type="checkbox" style="margin-top:3px"> <span>上記の注意事項を確認しました。</span>
+  <label class="dcCheck">
+   <input id="dcAgree" type="checkbox"> <span>上記の注意事項を確認しました。</span>
   </label>
   <div class="dcActions"><button id="dcCancel" type="button" style="background:#e2e8f0">キャンセル</button><button id="dcSave" type="button" style="background:#0f766e;color:#fff">この端末を登録</button></div>
  </div>
