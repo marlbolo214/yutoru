@@ -131,7 +131,22 @@
   .editRow .deleteWrap .del{width:auto;min-width:88px;max-width:none}
 }
 
-</style></head><body>
+</style>
+<style>
+body[data-device-role="punch"] #yutoruPlanBar select,
+body[data-device-role="punch"] #demoPlanSwitcher,
+body[data-device-role="punch"] #plusSettingsBtn,
+body[data-device-role="punch"] #plusAdminPanel{
+  display:none !important;
+}
+body[data-device-role="punch"] #yutoruPlanBar{
+  justify-content:flex-start;
+}
+body[data-device-role="punch"] #currentPlanBadge{
+  display:none !important;
+}
+</style>
+</head><body>
 <style>
 #yutoruPlanBar{
   position:sticky;top:0;z-index:8000;background:#ffffffee;backdrop-filter:blur(10px);
@@ -1386,6 +1401,10 @@ window.addEventListener("load",()=>{
     if(setupModal && isPunch) setupModal.classList.remove("open");
     if(plusPanel) plusPanel.style.display = isPunch ? "none" : (window.SALES_TENANT?.plan === "plus" ? "block" : "none");
     if(planSelect) planSelect.style.display = isPunch ? "none" : "";
+    const demoSwitcher = document.getElementById("demoPlanSwitcher");
+    const plusBtn = document.getElementById("plusSettingsBtn");
+    if(demoSwitcher) demoSwitcher.style.display = isPunch ? "none" : demoSwitcher.style.display;
+    if(plusBtn) plusBtn.style.display = isPunch ? "none" : plusBtn.style.display;
 
     // IMPORTANT: the staff selector, punch buttons, and today's work card stay visible.
     document.body.dataset.deviceRole = td?.role || "unregistered";
