@@ -1172,7 +1172,7 @@ window.addEventListener("load",()=>{
 #deviceConfirm{position:fixed;inset:0;background:#0008;z-index:12000;display:none;align-items:center;justify-content:center;padding:16px}
 #deviceConfirm.open{display:flex}.dcBox{background:#fff;width:min(560px,100%);max-height:90vh;overflow:auto;border-radius:20px;padding:18px;padding-bottom:calc(22px + env(safe-area-inset-bottom));overflow-wrap:anywhere}
 .dcWarn{background:#fff7ed;border:1px solid #fed7aa;border-radius:13px;padding:12px;font-size:13px;line-height:1.65}
-.dcCheck{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start;margin-top:13px;font-size:13px;line-height:1.6;font-weight:700}.dcCheck input{width:24px;height:24px;margin:1px 0 0}.dcCheck span{min-width:0;white-space:normal;overflow-wrap:anywhere}.dcActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}.dcActions button{padding:13px 8px;border:0;border-radius:11px;font-weight:800;font-size:15px}@media(max-width:390px){.dcBox{padding:16px}.dcActions{grid-template-columns:1fr}.dcCheck{font-size:14px}}
+.dcCheck{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start;margin-top:13px;font-size:13px;line-height:1.6;font-weight:700}.dcCheck input{width:24px;height:24px;margin:1px 0 0}.dcCheck span{min-width:0;white-space:normal;overflow-wrap:anywhere}.dcActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}.dcActions button{padding:13px 8px;border:0;border-radius:11px;font-weight:800;font-size:15px}.dcActions button:disabled{cursor:not-allowed;opacity:.6}@media(max-width:390px){.dcBox{padding:16px}.dcActions{grid-template-columns:1fr}.dcCheck{font-size:14px}}
 </style>
 <section id="deviceManager">
  <h3>🔐 端末管理</h3>
@@ -1204,13 +1204,15 @@ window.addEventListener("load",()=>{
   <label class="dcCheck">
    <input id="dcAgree" type="checkbox"> <span>上記の注意事項を確認しました。</span>
   </label>
-  <div class="dcActions"><button id="dcCancel" type="button" style="background:#e2e8f0">キャンセル</button><button id="dcSave" type="button" style="background:#0f766e;color:#fff">この端末を登録</button></div>
+  <div class="dcActions"><button id="dcCancel" type="button" style="background:#e2e8f0">キャンセル</button><button id="dcSave" type="button" disabled style="background:#94a3b8;color:#fff;opacity:.7">この端末を登録</button></div>
  </div>
 </div>
 
+
 <script>
 (() => {
-  const KEY = "yutoru_demo_devices_v12";
+  const KEY = "yutoru_demo_devices_v14";
+  const THIS_DEVICE_KEY = "yutoru_this_device_v14";
 
   const $ = (id) => document.getElementById(id);
 
@@ -1223,11 +1225,26 @@ window.addEventListener("load",()=>{
     localStorage.setItem(KEY, JSON.stringify(list));
   }
 
+  function loadThisDevice(){
+    try { return JSON.parse(localStorage.getItem(THIS_DEVICE_KEY) || "null"); }
+    catch(e){ return null; }
+  }
+
+  function saveThisDevice(device){
+    localStorage.setItem(THIS_DEVICE_KEY, JSON.stringify(device));
+  }
+
+  function removeThisDeviceIf(id){
+    const td = loadThisDevice();
+    if(td && td.id === id) localStorage.removeItem(THIS_DEVICE_KEY);
+  }
+
   function renderDevices(){
     const cards = $("dmCards");
     if(!cards) return;
 
     const d = loadDevices();
+    const td = loadThisDevice();
     const punch = d.filter(x => x.role === "punch");
     const admins = d.filter(x => x.role === "admin");
 
@@ -1245,12 +1262,21 @@ window.addEventListener("load",()=>{
       </div>
     `).join("");
 
+    // Only admin terminals can remove registered devices.
     cards.querySelectorAll("[data-remove]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const next = loadDevices().filter(x => x.id !== btn.dataset.remove);
-        saveDevices(next);
-        renderDevices();
-      });
+      if(!td || td.role !== "admin"){
+        btn.disabled = true;
+        btn.style.opacity = ".45";
+      } else {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.remove;
+          const next = loadDevices().filter(x => x.id !== id);
+          saveDevices(next);
+          removeThisDeviceIf(id);
+          renderDevices();
+          applyDevicePermissions();
+        });
+      }
     });
   }
 
@@ -1258,8 +1284,14 @@ window.addEventListener("load",()=>{
     const modal = $("deviceConfirm");
     const agree = $("dcAgree");
     const name = $("dcName");
+    const save = $("dcSave");
+
     if(agree) agree.checked = false;
     if(name) name.value = "";
+    if(save){
+      save.disabled = true;
+      save.style.background = "#94a3b8";
+    }
     if(modal){
       modal.style.display = "flex";
       modal.classList.add("open");
@@ -1274,15 +1306,20 @@ window.addEventListener("load",()=>{
     }
   }
 
+  function syncSaveButton(){
+    const agree = $("dcAgree");
+    const save = $("dcSave");
+    if(!agree || !save) return;
+    save.disabled = !agree.checked;
+    save.style.background = agree.checked ? "#0f766e" : "#94a3b8";
+  }
+
   function registerDevice(){
     const agree = $("dcAgree");
     const nameEl = $("dcName");
     const roleEl = $("dcRole");
 
-    if(!agree?.checked){
-      alert("注意事項を確認し、チェックを入れてください。");
-      return;
-    }
+    if(!agree?.checked) return;
 
     const name = (nameEl?.value || "").trim();
     if(!name){
@@ -1303,23 +1340,58 @@ window.addEventListener("load",()=>{
       return;
     }
 
-    d.push({
+    const device = {
       id: String(Date.now()),
       role,
       name,
       registeredAt: new Date().toISOString()
-    });
+    };
 
+    d.push(device);
     saveDevices(d);
+    saveThisDevice(device);
+
     closeModal();
     renderDevices();
+    applyDevicePermissions();
+  }
+
+  function hideByText(text){
+    document.querySelectorAll("button,a").forEach(el => {
+      if((el.textContent || "").includes(text)) el.style.display = "none";
+    });
+  }
+
+  function applyDevicePermissions(){
+    const td = loadThisDevice();
+    const adminArea = [...document.querySelectorAll("section,div")].find(el =>
+      (el.textContent || "").includes("管理者メニュー") &&
+      !el.id?.includes("device")
+    );
+
+    const deviceManager = $("deviceManager");
+
+    if(td && td.role === "punch"){
+      if(adminArea) adminArea.style.display = "none";
+      if(deviceManager) deviceManager.style.display = "none";
+      hideByText("初期設定");
+      hideByText("給与");
+      hideByText("修正");
+      hideByText("管理");
+    } else {
+      if(adminArea) adminArea.style.display = "";
+      if(deviceManager) deviceManager.style.display = "";
+    }
   }
 
   window.addEventListener("load", () => {
     $("dmRegister")?.addEventListener("click", openModal);
     $("dcCancel")?.addEventListener("click", closeModal);
     $("dcSave")?.addEventListener("click", registerDevice);
+    $("dcAgree")?.addEventListener("change", syncSaveButton);
+
     renderDevices();
+    applyDevicePermissions();
   });
 })();
 </script>
