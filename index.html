@@ -1,0 +1,1326 @@
+<!doctype html><html lang="ja"><head><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>YUTORU｜販売版 v3</title>
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="かんたん勤怠管理">
+<link rel="manifest" href="manifest.webmanifest"><!-- v27: 休憩開始15分切り下げ・休憩終了15分繰り上げ・交通費込み支給額表示 -->
+<style>body{font-family:-apple-system,sans-serif;background:#f5f6f8;margin:0;color:#111827}.w{max-width:760px;margin:auto;padding:18px}.top{background:#111827;color:white;padding:18px}.c{background:white;padding:18px;border-radius:18px;margin:14px 0}.g,.m{display:grid;grid-template-columns:1fr 1fr;gap:10px}select,input{width:100%;padding:13px;font-size:17px;box-sizing:border-box;border:1px solid #ddd;border-radius:11px}button{padding:17px;border:0;border-radius:14px;color:white;font-weight:800;font-size:17px}.in{background:#16a34a}.bs{background:#ca8a04}.be{background:#2563eb}.out,.del{background:#dc2626}.admin{background:#111827}.metric{background:#f5f6f8;padding:12px;border-radius:12px}.metric b{display:block;font-size:20px}.hide{display:none}.row{display:flex;gap:8px;flex-wrap:wrap}.row button{padding:10px;font-size:14px}.sr{display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px solid #eee}.sr button{padding:8px;font-size:12px}.tw{overflow:auto}table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:13px}th,td{padding:9px 6px;border-bottom:1px solid #eee;text-align:right}th:first-child,td:first-child{text-align:left}.total{font-weight:800;background:#f5f6f8}.note{font-size:12px;color:#6b7280}.actions button{background:#374151}.actions{margin-top:12px}
+.summaryCards{display:none}
+.payBreak{font-size:12px;color:#4b5563;line-height:1.55;margin-top:4px}
+.payBreak b{color:#111827}
+@media(max-width:640px){
+  .closingTable{display:none}
+  .summaryCards{display:grid;gap:12px}
+  .staffPayCard{background:#f8fafc;border:1px solid #e5e7eb;border-radius:16px;padding:14px}
+  .staffPayHead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px}
+  .staffPayName{font-size:19px;font-weight:800}
+  .staffPayTotal{font-size:20px;font-weight:900}
+  .staffPayGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px 12px;font-size:13px}
+  .staffPayGrid div{display:flex;justify-content:space-between;gap:8px}
+  .staffPayGrid span{color:#6b7280}
+  .premiumBox{margin-top:10px;padding-top:10px;border-top:1px solid #e5e7eb;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .premiumItem{background:white;border-radius:10px;padding:9px}
+  .premiumItem small{display:block;color:#6b7280}
+  .premiumItem b{font-size:16px}
+}
+
+.payDash{margin-top:14px}
+.payLegend{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.legendItem{border-radius:12px;padding:10px 8px;text-align:center;font-size:12px;font-weight:700}
+.legendBase{background:#eff6ff;color:#1d4ed8}
+.legendOt{background:#fff7ed;color:#c2410c}
+.legendNight{background:#f5f3ff;color:#6d28d9}
+.legendTotal{background:#f0fdf4;color:#15803d}
+.payOverview{display:grid;grid-template-columns:1.1fr repeat(4,1fr);gap:8px;margin:12px 0}
+.overviewBox{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:10px;font-size:12px}
+.overviewBox small{display:block;color:#6b7280;margin-bottom:4px}
+.overviewBox b{font-size:15px}
+.overviewCount{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800}
+.overviewCount .peopleIcon{width:28px;height:28px;border-radius:50%;background:#eef2ff;display:grid;place-items:center}
+.staffPayCard{background:#fff;border:1px solid #dfe4ea;border-radius:18px;padding:14px;box-shadow:0 2px 8px rgba(17,24,39,.04)}
+.staffPayHead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.staffIdentity{display:flex;align-items:center;gap:10px}
+.staffAvatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#2563eb,#4f46e5);color:white;font-weight:800}
+.staffPayName{font-size:19px;font-weight:850}
+.staffDays{display:inline-block;margin-top:3px;background:#f3f4f6;padding:3px 8px;border-radius:999px;font-size:11px;color:#4b5563}
+.staffPayTotal small{display:block;color:#6b7280;font-size:11px;font-weight:600}
+.staffPayTotal{font-size:22px;font-weight:900;text-align:right}
+.staffStats{display:grid;grid-template-columns:repeat(5,1fr);border:1px solid #e5e7eb;border-radius:12px;overflow:hidden}
+.statCell{padding:9px 5px;text-align:center;background:#fff;border-right:1px solid #e5e7eb}
+.statCell:last-child{border-right:0}
+.statCell small{display:block;color:#6b7280;font-size:10px;margin-bottom:4px}
+.statCell b{font-size:14px}
+.premiumBox{margin-top:10px;padding-top:0;border-top:0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.premiumItem{border-radius:12px;padding:10px}
+.premiumItem small{display:block;font-size:10px;margin-bottom:4px}
+.premiumItem b{font-size:17px}
+.pBase{background:#eff6ff;color:#1d4ed8}
+.pOt{background:#fff7ed;color:#c2410c}
+.pNight{background:#f5f3ff;color:#6d28d9}
+.payBreak{background:#f8fafc;border-radius:10px;padding:8px 10px;font-size:11px;color:#4b5563;line-height:1.45;margin-top:9px}
+@media(max-width:640px){
+  .payLegend{grid-template-columns:1fr 1fr}
+  .payOverview{grid-template-columns:1fr 1fr}
+  .payOverview .overviewCount{grid-column:1/-1}
+  .staffStats{grid-template-columns:repeat(2,1fr)}
+  .statCell{border-bottom:1px solid #e5e7eb}
+  .statCell:nth-child(even){border-right:0}
+  .statCell:last-child{grid-column:1/-1;border-bottom:0}
+  .premiumBox{grid-template-columns:1fr 1fr}
+  .premiumItem.pBase{grid-column:1/-1}
+}
+
+
+.pTransport{background:#f0fdf4;color:#15803d}
+#transportRows .staffrow{display:grid;grid-template-columns:1fr minmax(130px,220px);align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #e5e7eb}
+#transportRows input{width:100%;box-sizing:border-box}
+
+@media print{body{background:white}.top,.no-print{display:none!important}.c{box-shadow:none;border:0;margin:0;padding:8px}.w{max-width:none;padding:0}}.timeSelectWrap{display:grid;grid-template-columns:minmax(88px,1fr) auto minmax(88px,1fr) auto;gap:6px;align-items:center;flex:1}
+.timeSelectWrap select{width:100%;min-width:0;text-align:center;font-size:18px;font-weight:700;padding:13px 8px}
+.timeUnit{font-size:15px;font-weight:800;color:#4b5563;white-space:nowrap}
+@media(max-width:640px){
+  .timeSelectWrap{grid-template-columns:minmax(76px,1fr) auto minmax(76px,1fr) auto;gap:5px}
+  .timeSelectWrap select{font-size:17px;padding:12px 6px}
+  .timeUnit{font-size:14px}
+}
+/* v37: iPhone punch-edit row readability */
+.editRow{display:grid!important;grid-template-columns:minmax(138px,1.35fr) minmax(250px,2fr) 96px!important;gap:8px!important;align-items:center}
+.editRow>select:first-child{width:100%!important;min-width:138px!important;font-size:17px!important;font-weight:700!important;padding-left:12px!important;padding-right:30px!important}
+.editRow .timeSelectWrap{min-width:250px}
+@media(max-width:640px){
+  .editRow{grid-template-columns:minmax(128px,1.25fr) minmax(210px,2fr) 76px!important;gap:7px!important}
+  .editRow>select:first-child{min-width:128px!important;font-size:16px!important;padding-left:10px!important;padding-right:26px!important}
+  .editRow .timeSelectWrap{min-width:210px}
+}
+@media(max-width:430px){
+  .editRow{grid-template-columns:132px minmax(205px,1fr) 72px!important;gap:6px!important}
+  .editRow>select:first-child{min-width:132px!important;font-size:15px!important}
+}
+
+
+/* v38: mobile-friendly edit layout */
+.editRow{
+  display:grid!important;
+  grid-template-columns:minmax(150px,1.2fr) minmax(260px,2fr) 88px!important;
+  gap:8px!important;
+  align-items:center;
+  padding:8px 0;
+}
+.editRow .punchType{width:100%!important;min-width:150px!important}
+.editRow .deleteWrap{display:flex;justify-content:flex-end}
+.editRow .deleteWrap .del{width:100%;max-width:88px}
+@media(max-width:640px){
+  .editRow{
+    grid-template-columns:1fr!important;
+    gap:8px!important;
+    border-bottom:1px solid #e5e7eb;
+    padding:12px 0;
+  }
+  .editRow .punchType{
+    width:100%!important;
+    min-width:0!important;
+    font-size:17px!important;
+    font-weight:800!important;
+  }
+  .editRow .timeSelectWrap{
+    width:100%!important;
+    min-width:0!important;
+    grid-template-columns:minmax(90px,1fr) auto minmax(90px,1fr) auto!important;
+  }
+  .editRow .deleteWrap{justify-content:flex-end}
+  .editRow .deleteWrap .del{width:auto;min-width:88px;max-width:none}
+}
+
+</style></head><body>
+<style>
+#yutoruPlanBar{
+  position:sticky;top:0;z-index:8000;background:#ffffffee;backdrop-filter:blur(10px);
+  border-bottom:1px solid #e2e8f0;padding:10px 14px;display:flex;gap:10px;
+  align-items:center;justify-content:space-between
+}
+#yutoruPlanBar .ypLeft{font-weight:900;color:#0f172a}
+#yutoruPlanBar .ypBadge{display:inline-block;margin-left:6px;padding:4px 9px;border-radius:999px;background:#ecfdf5;color:#0f766e;font-size:12px}
+#yutoruPlanBar select{padding:8px 10px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;font-weight:700}
+#plusAdminPanel{margin:14px;background:#fff;border:1px solid #dbeafe;border-radius:18px;padding:16px;display:none}
+#plusAdminPanel h3{margin:0 0 8px;color:#0f172a}
+#plusAdminPanel p{margin:0 0 12px;color:#64748b;font-size:13px;line-height:1.6}
+#plusAdminPanel button{width:100%;border:0;border-radius:12px;padding:13px;background:#0f766e;color:#fff;font-weight:800}
+</style>
+<div id="yutoruPlanBar">
+  <div class="ypLeft">YUTORU <span id="currentPlanBadge" class="ypBadge">Standard</span></div>
+  <select id="topPlanSelect" aria-label="デモプラン切替">
+    <option value="founders">Founders 10</option>
+    <option value="standard" selected>Standard</option>
+    <option value="plus">Plus</option>
+  </select>
+</div>
+<div id="plusAdminPanel">
+  <h3>Plus｜保険・控除設定</h3>
+  <p>健康保険・介護保険・厚生年金・雇用保険を、料率／月額固定／スタッフ個別で設定できます。</p>
+  <button id="openPlusSettingsFromPanel" type="button">保険・控除設定を開く</button>
+</div>
+
+<div class="top"><h2>かんたん勤怠管理</h2><div id="clock"></div></div><div class="w">
+<div class="c no-print"><b>スタッフ</b><select id="staff"><option value="">読み込み中...</option></select><p id="status"></p><p id="cloudStatus" class="note">クラウド：未接続（端末内保存で利用中）</p><div class="g"><button class="in" onclick="stamp('出勤')">出勤</button><button class="bs" onclick="stamp('休憩開始')">休憩開始</button><button class="be" onclick="stamp('休憩終了')">休憩終了</button><button class="out" onclick="stamp('退勤')">退勤</button></div><p class="note">出勤は15分単位で繰り上げ／休憩開始は切り下げ／休憩終了は繰り上げ／退勤は切り下げ。修正画面・保存・給与計算も同じ時刻で統一</p></div>
+<div class="c"><b>本日の勤務</b><div id="log"></div><div class="m"><div class="metric">実働<b id="work">--</b></div><div class="metric">休憩<b id="brk">--</b></div><div class="metric">残業（8時間超）<b id="ot">--</b></div><div class="metric">深夜（22時以降）<b id="night">--</b></div></div></div>
+<div class="c"><b>月間勤務（21日〜翌20日）</b><p id="period"></p><div class="tw"><table><thead><tr><th>日付</th><th>実働</th><th>休憩</th><th>残業</th><th>深夜</th></tr></thead><tbody id="monthly"></tbody><tfoot id="totals"></tfoot></table></div></div>
+<div class="c no-print"><b>管理者メニュー</b><div id="pb" class="row"><input id="pin" type="password" placeholder="管理者PIN" style="flex:1"><button class="admin" onclick="login()">開く</button></div><div id="ad" class="hide"><div class="row"><input id="nn" placeholder="新しいスタッフ名" style="flex:1"><button class="admin" onclick="add()">追加</button></div><div id="list"></div><hr><b>クラウド保存</b>
+<p class="note">最初の1回だけ管理者が接続すると、この端末は以後自動で同期します。30秒ごとに他端末の打刻・時給・交通費も自動取得します。ネットが切れても端末内に保存し、復帰後に再同期します。</p>
+<div class="row"><input id="cloudEmail" type="email" placeholder="Supabase Authのメール" style="flex:1"><input id="cloudPassword" type="password" placeholder="パスワード" style="flex:1"></div>
+<div class="row actions"><button onclick="cloudLogin()">クラウド接続</button><button onclick="cloudTest()">接続テスト</button><button onclick="syncCloud(true)">今すぐ同期</button><button onclick="cloudLogout()">切断</button></div>
+<div id="cloudDiag" style="margin-top:10px;padding:12px;border:1px solid #d1d5db;border-radius:12px;background:#f8fafc;white-space:pre-wrap;font-size:13px;line-height:1.55">クラウド診断 v33：待機中</div>
+<p id="cloudAdminMsg" class="note" style="white-space:pre-wrap"></p>
+<hr><b>時給設定</b>
+<p class="note">スタッフごとに時給を登録します。給与目安＝実働×時給＋8時間超の25%割増＋深夜時間の25%割増。</p>
+<div id="wageList"></div>
+<div class="row actions"><button onclick="saveWages()">時給を保存</button></div>
+<p id="wageMsg" class="note"></p>
+<hr><b>交通費設定</b>
+<p class="note">スタッフごとに「1日あたりの交通費」を登録します。締め日集計では 出勤日数 × 1日交通費 を自動加算します。</p>
+<div id="transportRows"></div><div class="row actions"><button onclick="saveTransports()">交通費を保存</button></div><p id="transportMsg" class="note"></p>
+<hr><b>打刻の修正・削除</b><p class="note">スタッフと日付を選んで、過去の出勤・休憩・退勤時刻を「時・分」で見やすく修正できます。分は15分単位（00・15・30・45）です。</p><div class="row"><select id="editStaff" style="flex:1"></select><input id="editDate" type="date" style="flex:1"><button class="admin" onclick="loadEdit()">読み込む</button></div><div id="editRows"></div><div class="row actions"><button onclick="addEditRow()">打刻を追加</button><button onclick="saveEdits()">修正を保存</button></div><p id="editMsg" class="note"></p><hr><b>締め日用・全スタッフ一覧</b>
+<p class="note">スタッフごとに給与内訳をカード表示。残業・深夜の割増金額も色分けして確認できます。</p>
+<div class="payDash">
+  <div class="payLegend">
+    <div class="legendItem legendBase">基本分（実働×時給）</div>
+    <div class="legendItem legendOt">残業割増（+25%）</div>
+    <div class="legendItem legendNight">深夜割増（+25%）</div>
+    <div class="legendItem legendTotal">支給額（交通費込み）</div>
+  </div>
+  <div class="payOverview">
+    <div class="overviewBox overviewCount"><span class="peopleIcon">👥</span><span>登録スタッフ <b id="staffCount">0名</b></span></div>
+    <div class="overviewBox"><small>基本分 合計</small><b id="sumBase">¥0</b></div>
+    <div class="overviewBox"><small>残業割増 合計</small><b id="sumOt">¥0</b></div>
+    <div class="overviewBox"><small>深夜割増 合計</small><b id="sumNight">¥0</b></div>
+    <div class="overviewBox"><small>交通費 合計</small><b id="sumTransport">¥0</b></div>
+    <div class="overviewBox"><small>支給額（交通費込み） 合計</small><b id="sumTotal">¥0</b></div>
+  </div>
+</div>
+<div id="allmonthlyCards" class="summaryCards"></div><div class="tw closingTable"><table><thead><tr><th>スタッフ</th><th>出勤日数</th><th>時給</th><th>実働</th><th>休憩</th><th>残業</th><th>残業割増</th><th>深夜</th><th>深夜割増</th><th>給与目安</th></tr></thead><tbody id="allmonthly"></tbody></table></div><div class="row actions"><button onclick="csv()">CSV出力</button><button onclick="printReport()">PDF/印刷</button></div></div></div>
+<div id="printAll" class="c hide"><h2>全スタッフ 月間勤怠・給与集計</h2><p id="printPeriod"></p><div class="tw"><table><thead><tr><th>スタッフ</th><th>出勤日数</th><th>時給</th><th>実働</th><th>休憩</th><th>残業</th><th>残業割増</th><th>深夜</th><th>深夜割増</th><th>給与目安</th></tr></thead><tbody id="printBody"></tbody><tfoot><tr class="total"><td colspan="9">人件費合計</td><td id="printPayrollTotal">¥0</td></tr></tfoot></table></div></div>
+</div><script>
+// ZUCCA Attendance v44 rename persistence fix
+// ZUCCA Attendance v41 original ZUCCA duplicate staff cleanup
+// ZUCCA Attendance v41 duplicate fullname repair
+// ZUCCA Attendance v42 duplicate-name cleanup 2
+// ZUCCA Attendance v43 duplicate-name attendance reconciliation fix
+// ZUCCA Attendance v40 staff rename + cloud history sync
+// ZUCCA Attendance v39 cloud pull sync fix
+
+// ZUCCA Attendance v31 all-staff calculation/save fix
+
+const PHOTO_STAFF=[];const Q=x=>document.getElementById(x),SK='attendance_master_staff_v1',DK='attendance_master_data_v1',DEF=[];
+const SUPABASE_URL="",SUPABASE_KEY=""; // 販売用
+const CK='attendance_master_cloud_session_v1',DIRTY='attendance_master_dirty_days_v1',DELETED='attendance_master_deleted_staff_v1',WK='attendance_master_wages_v1',TK='attendance_master_transport_v1';
+let cloudBusy=false;
+
+function cloudSetStatus(msg,ok=true){
+  let text=String(msg||'');
+  let el=Q('cloudStatus');if(el)el.textContent='クラウド：'+text;
+  let ad=Q('cloudAdminMsg');if(ad)ad.textContent=text;
+  let dg=Q('cloudDiag');if(dg){dg.textContent='クラウド診断 v33\n'+text;dg.style.borderColor=ok?'#86efac':'#fca5a5';dg.style.background=ok?'#f0fdf4':'#fef2f2';}
+}
+function cloudSession(){try{return JSON.parse(localStorage.getItem(CK)||'null')}catch(e){return null}}
+function saveCloudSession(s){if(s)localStorage.setItem(CK,JSON.stringify(s));else localStorage.removeItem(CK)}
+async function authFetch(path,opt={}){let s=cloudSession();if(!s?.access_token)throw new Error('クラウド未接続');let h=Object.assign({'apikey':SUPABASE_KEY,'Authorization':'Bearer '+s.access_token,'Content-Type':'application/json'},opt.headers||{});let r=await fetch(SUPABASE_URL+path,Object.assign({},opt,{headers:h}));if(r.status===401&&s.refresh_token){let rr=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:s.refresh_token})});if(rr.ok){let ns=await rr.json();saveCloudSession(ns);h.Authorization='Bearer '+ns.access_token;r=await fetch(SUPABASE_URL+path,Object.assign({},opt,{headers:h}))}}if(!r.ok){let t=await r.text();throw new Error(t||('HTTP '+r.status))}return r}
+function cloudErrorText(err){
+  let raw=String(err?.message||err||'不明なエラー');
+  let msg=raw;
+  try{
+    let j=JSON.parse(raw);
+    msg=j.msg||j.message||j.error_description||j.error||raw;
+  }catch(e){}
+  const low=String(msg).toLowerCase();
+  if(low.includes('invalid login credentials')) return 'メールアドレスまたはパスワードが違います。\nSupabase応答: '+msg;
+  if(low.includes('email not confirmed')) return 'メール認証が完了していません。\nSupabase応答: '+msg;
+  if(low.includes('user not found')) return 'このメールアドレスのユーザーが見つかりません。\nSupabase応答: '+msg;
+  if(low.includes('failed to fetch')||low.includes('network')) return 'Supabaseへ通信できません。\nSupabase応答: '+msg;
+  return msg;
+}
+async function cloudTest(){
+  cloudSetStatus('接続テスト中…');
+  try{
+    let r=await fetch(SUPABASE_URL+'/auth/v1/health',{headers:{'apikey':SUPABASE_KEY}});
+    let body=await r.text();
+    if(!r.ok)throw new Error('HTTP '+r.status+' '+body);
+    cloudSetStatus('Supabaseへの通信は正常です。\n次にメールとパスワードを入力して「クラウド接続」を押してください。');
+    alert('Supabaseへの通信は正常です');
+  }catch(err){
+    let msg='接続テスト失敗：'+cloudErrorText(err);
+    cloudSetStatus(msg,false);
+    alert(msg);
+  }
+}
+async function cloudLogin(){
+  let e=Q('cloudEmail')?.value.trim(),p=Q('cloudPassword')?.value;
+  if(!e||!p){
+    let msg='メールとパスワードを両方入力してください。';
+    cloudSetStatus(msg,false);alert(msg);return;
+  }
+  try{
+    cloudSetStatus('認証中…\nメール: '+e);
+    let r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{
+      method:'POST',
+      headers:{'apikey':SUPABASE_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({email:e,password:p})
+    });
+    let body=await r.text();
+    if(!r.ok)throw new Error('HTTP '+r.status+' '+body);
+    let session=JSON.parse(body);
+    if(!session?.access_token)throw new Error('認証応答にaccess_tokenがありません: '+body);
+    saveCloudSession(session);
+    Q('cloudPassword').value='';
+    cloudSetStatus('認証成功 ✓\n勤怠データを同期しています…');
+    await syncCloud(true);
+    cloudSetStatus('認証・同期ともに成功しました ✓');
+    alert('クラウド接続・同期に成功しました');
+  }catch(err){
+    console.error('Cloud login error:',err);
+    let msg='接続失敗：'+cloudErrorText(err);
+    cloudSetStatus(msg,false);
+    alert(msg);
+  }
+}
+
+function cloudLogout(){saveCloudSession(null);cloudSetStatus('未接続（端末内保存で利用中）');}
+function dirtySet(){try{return new Set(JSON.parse(localStorage.getItem(DIRTY)||'[]'))}catch(e){return new Set()}}
+function markDirty(s,d){let z=dirtySet();z.add(s+'|'+d);localStorage.setItem(DIRTY,JSON.stringify([...z]))}
+function clearDirty(s,d){let z=dirtySet();z.delete(s+'|'+d);localStorage.setItem(DIRTY,JSON.stringify([...z]))}
+function deletedStaff(){try{return new Set(JSON.parse(localStorage.getItem(DELETED)||'[]'))}catch(e){return new Set()}}
+function markStaffDeleted(n){let z=deletedStaff();z.add(n);localStorage.setItem(DELETED,JSON.stringify([...z]))}
+function unmarkStaffDeleted(n){let z=deletedStaff();z.delete(n);localStorage.setItem(DELETED,JSON.stringify([...z]))}
+async function cloudReplaceDay(s,d,a){if(!cloudSession())return;await authFetch('/rest/v1/attendance?staff_name=eq.'+encodeURIComponent(s)+'&work_date=eq.'+encodeURIComponent(d),{method:'DELETE',headers:{'Prefer':'return=minimal'}});if(a.length){let rows=a.map((v,i)=>({staff_name:s,work_date:d,punch_type:v[0],punch_time:v[1]+':00',position:i}));await authFetch('/rest/v1/attendance',{method:'POST',headers:{'Prefer':'return=minimal'},body:JSON.stringify(rows)})}clearDirty(s,d)}
+async function cloudSyncStaff(){let local=staff(),w=wages(),tr=transports();for(let i=0;i<local.length;i++){let n=local[i];await authFetch('/rest/v1/staff_members?on_conflict=name',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({name:n,active:true,sort_order:i,hourly_wage:Number(w[n]||0),transport_per_day:Number(tr[n]||0)})});unmarkStaffDeleted(n)}for(let n of deletedStaff()){await authFetch('/rest/v1/staff_members?name=eq.'+encodeURIComponent(n),{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({active:false})})}}
+async function fetchCloudAttendance(){let r=await authFetch('/rest/v1/attendance?select=staff_name,work_date,punch_type,punch_time,position,id&order=work_date.asc,position.asc,id.asc');return await r.json()}
+const DUPLICATE_STAFF_NAME_MAP={
+  '茅野しのぶ':'チノ',
+  '大森明日香':'アスカ',
+  '松沢日和':'ヒヨリ',
+  '小林千佑':'チヒロ',
+  '寺崎雄介':'ユウスケ',
+  '小栗碧':'アオイ',
+  '山本ゆい':'ユイ',
+  '伊藤美優':'ミユ',
+  '青木那奈':'ナナ',
+  '立石琉瑛':'リュウエイ',
+  '宮本慶子':'ケイコ',
+  '椎谷彩月':'サツキ'
+};
+
+
+function punchSetScore(arr, preferAlias=false){
+  if(!Array.isArray(arr)||!arr.length)return -1;
+  const types=arr.map(v=>Array.isArray(v)?v[0]:v.punch_type);
+  const inN=types.filter(x=>x==='出勤').length;
+  const outN=types.filter(x=>x==='退勤').length;
+  const bs=types.filter(x=>x==='休憩開始').length;
+  const be=types.filter(x=>x==='休憩終了').length;
+  let score=0;
+  if(inN)score+=100;
+  if(outN)score+=100;
+  if(inN&&outN)score+=300;
+  score+=Math.min(bs,be)*40;
+  if(bs===be)score+=20;
+  score+=arr.length*3;
+  if(preferAlias)score+=0.5;
+  return score;
+}
+function normalizePunchSet(arr){
+  return (arr||[]).map((r,i)=>Array.isArray(r)?[r[0],String(r[1]||'').slice(0,5)]:[r.punch_type,String(r.punch_time||'').slice(0,5)]);
+}
+function chooseBetterPunchSet(canonArr,aliasArr,preferAlias=false){
+  const c=normalizePunchSet(canonArr),a=normalizePunchSet(aliasArr);
+  const cs=punchSetScore(c,false),as=punchSetScore(a,preferAlias);
+  if(as>cs)return a;
+  if(cs>as)return c;
+  if(a.length!==c.length)return a.length>c.length?a:c;
+  return preferAlias&&a.length?a:c;
+}
+
+async function repairDuplicateCloudStaff(){
+  // v44: 旧フルネーム→略称への自動修復は完了済み。
+  // 名前変更後の新しい名前を旧名へ戻してしまうため、通常同期では実行しない。
+  return;
+}
+
+async function fetchCloudStaff(){let r=await authFetch('/rest/v1/staff_members?select=name,active,sort_order,hourly_wage,transport_per_day&order=sort_order.asc,name.asc');return await r.json()}
+function allLocalDays(){let x=JSON.parse(localStorage.getItem(DK)||'{}'),out=[];for(let [s,days] of Object.entries(x))for(let [d,a] of Object.entries(days||{}))if(Array.isArray(a)&&a.length)out.push([s,d,a]);return out}
+async function syncCloud(showMsg=false){
+  if(cloudBusy)return;
+  if(!cloudSession()){
+    if(showMsg)cloudSetStatus('未接続（端末内保存で利用中）',false);
+    return;
+  }
+  cloudBusy=true;
+  try{
+    cloudSetStatus('同期中…');
+    await repairDuplicateCloudStaff();
+    let dirty=dirtySet();
+
+    // 端末で変更した日を先にクラウドへ送る
+    for(let k of [...dirty]){
+      let [s,d]=k.split('|'),
+          x=JSON.parse(localStorage.getItem(DK)||'{}');
+      await cloudReplaceDay(s,d,x[s]?.[d]||[]);
+    }
+
+    let rows=await fetchCloudAttendance();
+    if(!rows.length){
+      for(let [s,d,a] of allLocalDays())await cloudReplaceDay(s,d,a);
+      rows=await fetchCloudAttendance();
+    }
+
+    // クラウドの打刻を端末へ反映
+    let x=JSON.parse(localStorage.getItem(DK)||'{}');
+    let cloudKeys=new Set();
+    for(let r of rows){
+      let sn=r.staff_name,d=r.work_date,t=String(r.punch_time||'').slice(0,5);
+      x[sn]??={};
+      if(!cloudKeys.has(sn+'|'+d)){
+        x[sn][d]=[];
+        cloudKeys.add(sn+'|'+d);
+      }
+      x[sn][d].push([r.punch_type,t]);
+    }
+    localStorage.setItem(DK,JSON.stringify(x));
+
+    // スタッフ・時給・交通費は通常同期ではクラウドを正として取得する。
+    // 別端末の空欄データでクラウドを上書きしない。
+    let sr=await fetchCloudStaff();
+
+    // クラウド側が完全に空の初回だけ、この端末の設定を登録する。
+    if(!sr.length){
+      await cloudSyncStaff();
+      sr=await fetchCloudStaff();
+    }
+
+    let active=sr.filter(v=>v.active).map(v=>v.name);
+    if(active.length)localStorage.setItem(SK,JSON.stringify(active));
+
+    let cw={},ct={};
+    sr.forEach(v=>{
+      if(!v.active)return;
+      let hw=Number(v.hourly_wage||0),tp=Number(v.transport_per_day||0);
+      if(hw>0)cw[v.name]=hw;
+      if(tp>0)ct[v.name]=tp;
+    });
+    localStorage.setItem(WK,JSON.stringify(cw));
+    localStorage.setItem(TK,JSON.stringify(ct));
+
+    rs();
+    cloudSetStatus('同期済み ✓');
+  }catch(err){
+    console.error('syncCloud error:',err);
+    cloudSetStatus('未同期（端末内には保存済み）\n'+cloudErrorText(err),false);
+  }finally{
+    cloudBusy=false;
+  }
+}
+let cloudRetryTimer=null;
+function scheduleCloudRetry(){
+  if(cloudRetryTimer)clearTimeout(cloudRetryTimer);
+  cloudRetryTimer=setTimeout(async()=>{
+    cloudRetryTimer=null;
+    if(cloudSession()&&dirtySet().size)await syncCloud(false);
+  },5000);
+}
+async function cloudAfterDayChange(s,d,a){
+  markDirty(s,d);
+  if(!cloudSession()){
+    cloudSetStatus('未接続（端末内保存で利用中）',false);
+    return;
+  }
+  try{
+    cloudSetStatus('同期中…');
+    await cloudReplaceDay(s,d,a);
+    cloudSetStatus('同期済み ✓');
+  }catch(e){
+    console.error('cloudAfterDayChange error:',e);
+    cloudSetStatus('未同期（端末内には保存済み）\n自動で再試行します。\n'+cloudErrorText(e),false);
+    scheduleCloudRetry();
+  }
+}
+async function cloudAddStaff(n){if(!cloudSession())return;try{await authFetch('/rest/v1/staff_members?on_conflict=name',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({name:n,active:true,sort_order:staff().indexOf(n),hourly_wage:Number(wages()[n]||0),transport_per_day:Number(transports()[n]||0)})});unmarkStaffDeleted(n);cloudSetStatus('同期済み ✓')}catch(e){cloudSetStatus('スタッフ変更は端末内のみ保存',false)}}
+async function cloudDeleteStaff(n){markStaffDeleted(n);if(!cloudSession())return;try{await authFetch('/rest/v1/staff_members?name=eq.'+encodeURIComponent(n),{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({active:false})});cloudSetStatus('同期済み ✓')}catch(e){cloudSetStatus('スタッフ変更は端末内のみ保存',false)}}
+
+function wages(){try{let w=JSON.parse(localStorage.getItem(WK)||'{}');return w&&typeof w==='object'?w:{}}catch(e){return {}}}
+function yen(n){return '¥'+Math.round(Number(n)||0).toLocaleString('ja-JP')}
+
+function transports(){try{return JSON.parse(localStorage.getItem(TK)||'{}')}catch(e){return {}}}
+function saveTransport(name,val){
+  let x=transports(),n=Math.max(0,Number(val||0));
+  if(n>0)x[name]=n;else delete x[name];
+  localStorage.setItem(TK,JSON.stringify(x));
+  allSummary();
+}
+async function saveTransports(){
+  let x=transports();
+  document.querySelectorAll('#transportRows input[data-staff]').forEach(inp=>{
+    let v=Math.max(0,Number(inp.value)||0);
+    if(v>0)x[inp.dataset.staff]=v;else delete x[inp.dataset.staff];
+  });
+  localStorage.setItem(TK,JSON.stringify(x));
+  allSummary();
+  if(Q('transportMsg'))Q('transportMsg').textContent='交通費を保存しました';
+  if(cloudSession()){
+    try{
+      await cloudSyncStaff();
+      if(Q('transportMsg'))Q('transportMsg').textContent='交通費を保存・クラウド同期しました ✓';
+      cloudSetStatus('同期済み ✓');
+    }catch(e){
+      if(Q('transportMsg'))Q('transportMsg').textContent='交通費は端末内に保存済み（クラウド同期は未完了）';
+    }
+  }
+}
+
+function payrollDetail(t,wage,transportPerDay=0){
+  wage=Number(wage)||0;
+  transportPerDay=Number(transportPerDay)||0;
+  let work=t[1]||0,ot=t[3]||0,night=t[4]||0;work=Math.floor(work/15)*15;
+  let base=work/60*wage;
+  let overtimePremium=ot/60*wage*.25;
+  let nightPremium=night/60*wage*.25;
+  let transport=(t[0]||0)*transportPerDay;
+  return {base,overtimePremium,nightPremium,transport,transportPerDay,total:base+overtimePremium+nightPremium+transport};
+}
+function payrollFromTotals(t,wage,transportPerDay=0){return payrollDetail(t,wage,transportPerDay).total}
+function renderWages(){let box=Q('wageList');if(!box)return;let w=wages();box.replaceChildren();staff().forEach(n=>{let row=document.createElement('div');row.className='sr';let sp=document.createElement('span');sp.textContent=n;let inp=document.createElement('input');inp.type='number';inp.min='0';inp.step='10';inp.inputMode='numeric';inp.value=w[n]||'';inp.placeholder='時給';inp.dataset.staff=n;inp.style.width='140px';row.append(sp,inp);box.appendChild(row)})}
+async function saveWages(){let w=wages();document.querySelectorAll('#wageList input[data-staff]').forEach(inp=>{let v=Math.max(0,Number(inp.value)||0);if(v>0)w[inp.dataset.staff]=v;else delete w[inp.dataset.staff]});localStorage.setItem(WK,JSON.stringify(w));Q('wageMsg').textContent='時給を保存しました';allSummary();if(cloudSession()){try{await cloudSyncStaff();Q('wageMsg').textContent='時給を保存・クラウド同期しました ✓';cloudSetStatus('同期済み ✓')}catch(e){Q('wageMsg').textContent='時給は端末内に保存済み（クラウド同期は未完了）'}}}
+
+function migrateData(){try{
+  // 初回だけ旧名の修正と初期スタッフ登録を行う。削除後は自動復活させない。
+  const MK='zucca_staff_migrated_v16';
+  let raw=localStorage.getItem(SK),a=raw?JSON.parse(raw):[];
+  const rename={'シナ':'シャナ','リュウセイ':'リュウエイ','リクタイ':'リュウエイ','シュウ':'シェフ'};
+  const remove=new Set([]);
+  a=(Array.isArray(a)?a:[]).map(n=>rename[n]||n).filter(n=>!remove.has(n));
+  if(!localStorage.getItem(MK)){
+    if(!raw||!a.length) a=[...DEF];
+    localStorage.setItem(MK,'1');
+  }
+  a=[...new Set(a)]; localStorage.setItem(SK,JSON.stringify(a));
+  let d=JSON.parse(localStorage.getItem(DK)||'{}');
+  for(const [oldn,newn] of Object.entries(rename)){if(d[oldn]){d[newn]??={};for(const [day,rows] of Object.entries(d[oldn])){if(!d[newn][day])d[newn][day]=rows}delete d[oldn]}}
+  localStorage.setItem(DK,JSON.stringify(d));
+}catch(e){}}
+function staff(){try{migrateData();const v=JSON.parse(localStorage.getItem(SK)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}} function safe(s){return String(s).replace(/[&<>]/g,'')}
+function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function fillStaffSelect(el,names,keep){if(!el)return;el.replaceChildren();names.forEach(n=>{const op=document.createElement('option');op.value=n;op.textContent=n;el.appendChild(op)});if(keep&&names.includes(keep))el.value=keep;else if(names.length)el.selectedIndex=0}
+function rs(){const a=staff();const main=Q('staff');const o=main?main.value:'';fillStaffSelect(main,a,o);if(Q('editStaff')){const eo=Q('editStaff').value;fillStaffSelect(Q('editStaff'),a,eo)}rl();renderWages();render();allSummary()}
+function punchTime(kind){
+  let d=new Date(),h=d.getHours(),m=d.getMinutes();
+
+  if(kind==='出勤'){
+    // 出勤：15分単位で繰り上げ
+    m=Math.ceil(m/15)*15;
+  }else if(kind==='退勤'){
+    // 退勤：15分単位で切り下げ
+    m=Math.floor(m/15)*15;
+  }else if(kind==='休憩開始'){
+    // 休憩開始：15分単位で切り下げ
+    m=Math.floor(m/15)*15;
+  }else if(kind==='休憩終了'){
+    // 休憩終了：15分単位で繰り上げ
+    m=Math.ceil(m/15)*15;
+  }else{
+    m=Math.round(m/15)*15;
+  }
+
+  if(m===60){h++;m=0}
+  if(h<9){h=9;m=0}
+
+  return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')
+}
+function stamp(k){let x=JSON.parse(localStorage.getItem(DK)||'{}'),s=Q('staff').value,day=iso(new Date());if(!s)return;x[s]??={};x[s][day]??=[];x[s][day].push([k,punchTime(k)]);localStorage.setItem(DK,JSON.stringify(x));render();allSummary();cloudAfterDayChange(s,day,x[s][day])}
+function mins(t){let a=t.split(':').map(Number);return a[0]*60+a[1]} function fmt(n){if(n==null)return'--';n=Math.max(0,Math.round(n));return Math.floor(n/60)+':'+String(n%60).padStart(2,'0')}
+function roundPunchTime(kind,time){
+  if(!time)return time;
+  let [h,m]=time.split(':').map(Number);
+  if(kind==='出勤' || kind==='休憩終了'){
+    m=Math.ceil(m/15)*15;
+  }else if(kind==='退勤' || kind==='休憩開始'){
+    m=Math.floor(m/15)*15;
+  }
+  if(m===60){h++;m=0}
+  return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+}
+
+function calc(a){
+  // 計算時も、出勤↑・休憩開始↓・休憩終了↑・退勤↓ の15分ルールを必ず適用
+  let aa=(a||[]).map(v=>[v[0],roundPunchTime(v[0],v[1])]);
+  // 修正画面や旧データで「出勤」が2回になっている場合、退勤が無ければ最後の出勤を退勤として扱う。
+  // これにより休憩なしの「出勤→退勤」だけの日も全スタッフ共通で実働計算できる。
+  if(!aa.some(v=>v[0]==='退勤')){
+    let ins=[];aa.forEach((v,i)=>{if(v[0]==='出勤')ins.push(i)});
+    if(ins.length>=2)aa[ins[ins.length-1]][0]='退勤';
+  }
+  let ci=aa.find(v=>v[0]=='出勤'),
+      co=[...aa].reverse().find(v=>v[0]=='退勤'),
+      b=0,nb=0,op=null;
+
+  for(let v of aa){
+    if(v[0]=='休憩開始')op=mins(v[1]);
+    if(v[0]=='休憩終了'&&op!=null){
+      let e=mins(v[1]);
+      b+=Math.max(0,e-op);
+      nb+=Math.max(0,e-Math.max(op,1320));
+      op=null;
+    }
+  }
+
+  if(!ci||!co)return[null,b,null,null];
+
+  let st=mins(ci[1]),en=mins(co[1]);
+  if(en<st)en+=1440;
+
+  let work=Math.max(0,en-st-b);
+  work=Math.floor(work/15)*15;
+
+  let overtime=Math.max(0,work-480);
+  overtime=Math.floor(overtime/15)*15;
+
+  let night=Math.max(0,en-Math.max(st,1320)-nb);
+  night=Math.floor(night/15)*15;
+
+  return[work,b,overtime,night];
+}
+function range(){let n=new Date(),s=n.getDate()>=21?new Date(n.getFullYear(),n.getMonth(),21):new Date(n.getFullYear(),n.getMonth()-1,21);return[s,new Date(s.getFullYear(),s.getMonth()+1,20)]}
+function render(){let x=JSON.parse(localStorage.getItem(DK)||'{}'),s=Q('staff').value,d=iso(new Date()),a=x[s]?.[d]||[];Q('log').innerHTML=a.map(v=>'<p>'+v[0]+' <b>'+v[1]+'</b></p>').join('')||'<p>まだ打刻はありません</p>';Q('status').textContent=a.length?'最後：'+a[a.length-1][0]:'未打刻';let c=calc(a);['work','brk','ot','night'].forEach((z,i)=>Q(z).textContent=fmt(c[i]));month(x,s)}
+function month(x,s){let [st,en]=range(),d=new Date(st),rows=[],tot=[0,0,0,0];Q('period').textContent=iso(st)+' ～ '+iso(en);while(d<=en){let k=iso(d),a=x[s]?.[k]||[];if(a.length){let c=calc(a);rows.push('<tr><td>'+(d.getMonth()+1)+'/'+d.getDate()+'</td>'+c.map(v=>'<td>'+fmt(v)+'</td>').join('')+'</tr>');c.forEach((v,i)=>{if(v!=null)tot[i]+=v})}d.setDate(d.getDate()+1)}Q('monthly').innerHTML=rows.join('')||'<tr><td colspan="5">この期間の打刻はありません</td></tr>';Q('totals').innerHTML='<tr class="total"><td>合計</td>'+tot.map(v=>'<td>'+fmt(v)+'</td>').join('')+'</tr>'}
+function staffTotal(x,s){let [st,en]=range(),d=new Date(st),tot=[0,0,0,0],days=0;while(d<=en){let a=x[s]?.[iso(d)]||[];if(a.some(v=>v[0]==='出勤'))days++;let c=calc(a);c.forEach((v,i)=>{if(v!=null)tot[i]+=v});d.setDate(d.getDate()+1)}return [days,...tot]}
+
+function renderTransportRows(){
+  let box=Q('transportRows'); if(!box)return;
+  let x=transports(); box.replaceChildren();
+  staff().forEach(n=>{
+    let row=document.createElement('div');row.className='staffrow';
+    let sp=document.createElement('span');sp.textContent=n;
+    let inp=document.createElement('input');inp.type='number';inp.min='0';inp.step='1';inp.inputMode='numeric';
+    inp.value=x[n]||'';inp.placeholder='1日交通費';inp.dataset.staff=n;
+    row.append(sp,inp);box.appendChild(row);
+  });
+}
+
+function allSummary(){
+  let x=JSON.parse(localStorage.getItem(DK)||'{}'),w=wages(),tr=transports();
+  let grand=0,sumBase=0,sumOt=0,sumNight=0,sumTransport=0,tableRows=[],cards=[];
+  let members=staff();
+  members.forEach(name=>{
+    let t=staffTotal(x,name),rate=Number(w[name]||0),transportPerDay=Number(tr[name]||0),p=payrollDetail(t,rate,transportPerDay);
+    grand+=p.total;sumBase+=p.base;sumOt+=p.overtimePremium;sumNight+=p.nightPremium;sumTransport+=p.transport;
+    tableRows.push('<tr><td>'+safe(name)+'</td><td>'+t[0]+'</td><td>'+yen(rate)+'</td><td>'+fmt(t[1])+'</td><td>'+fmt(t[2])+'</td><td>'+fmt(t[3])+'</td><td>'+yen(p.overtimePremium)+'</td><td>'+fmt(t[4])+'</td><td>'+yen(p.nightPremium)+'</td><td>'+yen(p.total)+'</td></tr>');
+    let initial=safe(name).charAt(0);
+    cards.push(
+      '<div class="staffPayCard">'+
+        '<div class="staffPayHead">'+
+          '<div class="staffIdentity"><div class="staffAvatar">'+initial+'</div><div><div class="staffPayName">'+safe(name)+'</div><span class="staffDays">出勤日数 '+t[0]+'日</span></div></div>'+
+          '<div class="staffPayTotal"><small>支給額（交通費込み）</small>'+yen(p.total)+'</div>'+
+        '</div>'+
+        '<div class="staffStats">'+
+          '<div class="statCell"><small>時給</small><b>'+yen(rate)+'</b></div>'+
+          '<div class="statCell"><small>実働</small><b>'+fmt(t[1])+'</b></div>'+
+          '<div class="statCell"><small>休憩</small><b>'+fmt(t[2])+'</b></div>'+
+          '<div class="statCell"><small>残業時間</small><b>'+fmt(t[3])+'</b></div>'+
+          '<div class="statCell"><small>深夜時間</small><b>'+fmt(t[4])+'</b></div>'+
+        '</div>'+
+        '<div class="premiumBox">'+
+          '<div class="premiumItem pBase"><small>基本分（実働×時給）</small><b>'+yen(p.base)+'</b></div>'+
+          '<div class="premiumItem pOt"><small>残業割増分（+25%）</small><b>'+yen(p.overtimePremium)+'</b></div>'+
+          '<div class="premiumItem pNight"><small>深夜割増分（+25%）</small><b>'+yen(p.nightPremium)+'</b></div>'+
+          '<div class="premiumItem pTransport"><small>交通費（'+t[0]+'日 × '+yen(p.transportPerDay)+'）</small><b>'+yen(p.transport)+'</b></div>'+
+        '</div>'+
+        '<div class="payBreak">計算式：基本分 '+yen(p.base)+' ＋ 残業割増 '+yen(p.overtimePremium)+' ＋ 深夜割増 '+yen(p.nightPremium)+' ＋ 交通費 '+yen(p.transport)+' ＝ <b>支給額（交通費込み） '+yen(p.total)+'</b></div>'+
+      '</div>'
+    );
+  });
+  Q('allmonthly').innerHTML=tableRows.join('');
+  if(Q('allmonthlyCards'))Q('allmonthlyCards').innerHTML=cards.join('');
+  Q('printBody').innerHTML=tableRows.join('');
+  if(Q('printPayrollTotal'))Q('printPayrollTotal').textContent=yen(grand);
+  if(Q('staffCount'))Q('staffCount').textContent=members.length+'名';
+  if(Q('sumBase'))Q('sumBase').textContent=yen(sumBase);
+  if(Q('sumOt'))Q('sumOt').textContent=yen(sumOt);
+  if(Q('sumNight'))Q('sumNight').textContent=yen(sumNight);
+  if(Q('sumTransport'))Q('sumTransport').textContent=yen(sumTransport);
+  if(Q('sumTotal'))Q('sumTotal').textContent=yen(grand);
+  renderTransportRows();
+  let r=range();Q('printPeriod').textContent=iso(r[0])+' ～ '+iso(r[1]);
+}
+function escAttr(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
+function defaultEditDate(){if(Q('editDate')&&!Q('editDate').value)Q('editDate').value=iso(new Date())}
+function loadEdit(){defaultEditDate();let x=JSON.parse(localStorage.getItem(DK)||'{}'),s=Q('editStaff').value,d=Q('editDate').value,a=(x[s]?.[d]||[]).map(v=>[v[0],v[1]]);window._zuccaEdit=a;renderEditRows();Q('editMsg').textContent=a.length?'打刻を読み込みました':'この日の打刻はありません。必要なら「打刻を追加」できます。'}
+
+function setEditHour(i,h){
+  let cur=(window._zuccaEdit[i]&&window._zuccaEdit[i][1])||'09:00';
+  let mm=cur.split(':')[1]||'00';
+  window._zuccaEdit[i][1]=h+':'+mm;
+}
+function setEditMinute(i,m){
+  let cur=(window._zuccaEdit[i]&&window._zuccaEdit[i][1])||'09:00';
+  let hh=cur.split(':')[0]||'09';
+  window._zuccaEdit[i][1]=hh+':'+m;
+}
+
+function renderEditRows(){
+  let a=window._zuccaEdit||[];
+  const hours=Array.from({length:24},(_,h)=>String(h).padStart(2,'0'));
+  const mins15=['00','15','30','45'];
+
+  Q('editRows').innerHTML=a.map((v,i)=>{
+    let normalized=roundPunchTime(v[0],v[1]||'09:00');
+    let parts=normalized.split(':');
+    let hh=parts[0],mm=parts[1];
+    window._zuccaEdit[i][1]=normalized;
+
+    let hourOptions=hours.map(h=>'<option value="'+h+'"'+(h===hh?' selected':'')+'>'+h+'</option>').join('');
+    let minOptions=mins15.map(m=>'<option value="'+m+'"'+(m===mm?' selected':'')+'>'+m+'</option>').join('');
+
+    return '<div class="editRow">'+
+      '<select class="punchType" onchange="_zuccaEdit['+i+'][0]=this.value;_zuccaEdit['+i+'][1]=roundPunchTime(this.value,_zuccaEdit['+i+'][1]);renderEditRows()">'+
+        '<option'+(v[0]=='出勤'?' selected':'')+'>出勤</option>'+
+        '<option'+(v[0]=='休憩開始'?' selected':'')+'>休憩開始</option>'+
+        '<option'+(v[0]=='休憩終了'?' selected':'')+'>休憩終了</option>'+
+        '<option'+(v[0]=='退勤'?' selected':'')+'>退勤</option>'+
+      '</select>'+
+      '<div class="timeSelectWrap">'+
+        '<select aria-label="時" onchange="setEditHour('+i+',this.value)">'+hourOptions+'</select>'+
+        '<span class="timeUnit">時</span>'+
+        '<select aria-label="分" onchange="setEditMinute('+i+',this.value)">'+minOptions+'</select>'+
+        '<span class="timeUnit">分</span>'+
+      '</div>'+
+      '<div class="deleteWrap"><button class="del" onclick="deleteEditRow('+i+')">削除</button></div>'+
+    '</div>';
+  }).join('')||'<p class="note">打刻なし</p>';
+}
+function addEditRow(){window._zuccaEdit=window._zuccaEdit||[];window._zuccaEdit.push(['出勤','09:00']);renderEditRows()}
+function deleteEditRow(i){if(!confirm('この打刻を削除しますか？'))return;window._zuccaEdit.splice(i,1);renderEditRows()}
+function saveEdits(){
+  defaultEditDate();let s=Q('editStaff').value,d=Q('editDate').value;if(!s||!d)return;let a=(window._zuccaEdit||[]).filter(v=>v[0]&&v[1]).map(v=>[v[0],roundPunchTime(v[0],v[1])]);window._zuccaEdit=a;let x=JSON.parse(localStorage.getItem(DK)||'{}');x[s]??={};if(a.length)x[s][d]=a;else if(x[s])delete x[s][d];localStorage.setItem(DK,JSON.stringify(x));Q('editMsg').textContent='保存しました。実働・残業・深夜・月間合計を再計算しました。';render();allSummary();cloudAfterDayChange(s,d,a)}
+function login(){if(Q('pin').value==='1234'){Q('pb').classList.add('hide');Q('ad').classList.remove('hide');defaultEditDate();rs();rl();renderWages();allSummary()}else alert('PINが違います')}
+function add(){let n=Q('nn').value.trim(),a=staff();if(!n||a.includes(n))return;a.push(n);localStorage.setItem(SK,JSON.stringify(a));unmarkStaffDeleted(n);Q('nn').value='';rs();cloudAddStaff(n)} function del(n){if(confirm(n+'を削除しますか？')){localStorage.setItem(SK,JSON.stringify(staff().filter(x=>x!==n)));rs();cloudDeleteStaff(n)}}
+async function renameStaff(oldn){
+  let newn=prompt('新しいスタッフ名を入力してください',oldn);if(newn==null)return;newn=newn.trim();
+  if(!newn||newn===oldn)return;
+  let a=staff();if(a.includes(newn)){alert('同じ名前のスタッフがすでにいます');return}
+  if(!confirm(oldn+' → '+newn+' に変更しますか？\n過去の勤怠データ・時給・交通費も新しい名前に統一します。'))return;
+
+  if(cloudBusy){alert('クラウド同期中です。数秒待ってからもう一度お試しください。');return}
+  cloudBusy=true;
+  try{
+    let idx=a.indexOf(oldn),w=wages(),tr=transports();
+
+    // クラウド接続中は、先にクラウド側の変更を完了させてから端末表示を切り替える。
+    // これにより30秒同期が途中で走って旧名を戻すのを防ぐ。
+    if(cloudSession()){
+      cloudSetStatus('名前変更を同期中…');
+      let sr=await fetchCloudStaff(),old=sr.find(v=>v.name===oldn)||{};
+      await authFetch('/rest/v1/staff_members?on_conflict=name',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({
+        name:newn,
+        active:true,
+        sort_order:Number(old.sort_order??idx),
+        hourly_wage:Number(old.hourly_wage||w[oldn]||0),
+        transport_per_day:Number(old.transport_per_day||tr[oldn]||0)
+      })});
+      await authFetch('/rest/v1/attendance?staff_name=eq.'+encodeURIComponent(oldn),{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({staff_name:newn})});
+      await authFetch('/rest/v1/staff_members?name=eq.'+encodeURIComponent(oldn),{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({active:false})});
+
+      // 反映確認。新名がactiveでない場合はローカルを切り替えない。
+      let verify=await fetchCloudStaff();
+      let nr=verify.find(v=>v.name===newn),or=verify.find(v=>v.name===oldn);
+      if(!nr||!nr.active|| (or&&or.active))throw new Error('クラウド側の名前変更を確認できませんでした');
+    }
+
+    // クラウド変更成功後に端末内データを一括変更
+    if(idx>=0)a[idx]=newn;
+    localStorage.setItem(SK,JSON.stringify(a));
+    let d=JSON.parse(localStorage.getItem(DK)||'{}');
+    if(d[oldn]){
+      d[newn]??={};
+      for(const [day,rows] of Object.entries(d[oldn]))d[newn][day]=rows;
+      delete d[oldn];
+      localStorage.setItem(DK,JSON.stringify(d));
+    }
+    if(Object.prototype.hasOwnProperty.call(w,oldn)){w[newn]=w[oldn];delete w[oldn];localStorage.setItem(WK,JSON.stringify(w))}
+    if(Object.prototype.hasOwnProperty.call(tr,oldn)){tr[newn]=tr[oldn];delete tr[oldn];localStorage.setItem(TK,JSON.stringify(tr))}
+    unmarkStaffDeleted(newn);markStaffDeleted(oldn);
+
+    rs();
+    cloudSetStatus(cloudSession()?'名前変更をクラウド同期しました ✓':'名前変更を端末内に保存しました ✓');
+    alert('名前を変更しました：'+oldn+' → '+newn);
+  }catch(e){
+    console.error(e);
+    cloudSetStatus('名前変更のクラウド更新に失敗しました',false);
+    alert('名前変更を完了できませんでした。旧名のまま保持しています。\nもう一度お試しください。');
+  }finally{
+    cloudBusy=false;
+  }
+}
+function rl(){const box=Q('list');box.replaceChildren();staff().forEach(n=>{const row=document.createElement('div');row.className='sr';const sp=document.createElement('span');sp.textContent=n;const edit=document.createElement('button');edit.className='admin';edit.textContent='名前変更';edit.onclick=()=>renameStaff(n);const b=document.createElement('button');b.className='del';b.textContent='削除';b.onclick=()=>del(n);row.append(sp,edit,b);box.appendChild(row)})}
+function csv(){let x=JSON.parse(localStorage.getItem(DK)||'{}'),w=wages(),tr=transports(),r=range(),lines=['スタッフ,期間,出勤日数,時給,実働,休憩,残業,残業割増額,深夜,深夜割増額,交通費,支給額'];staff().forEach(s=>{let t=staffTotal(x,s),rate=Number(w[s]||0),p=payrollDetail(t,rate,Number(tr[s]||0));lines.push('"'+s.replace(/"/g,'""')+'","'+iso(r[0])+'～'+iso(r[1])+'",'+t[0]+','+rate+','+fmt(t[1])+','+fmt(t[2])+','+fmt(t[3])+','+Math.round(p.overtimePremium)+','+fmt(t[4])+','+Math.round(p.nightPremium)+','+Math.round(p.transport)+','+Math.round(p.total))});let blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='かんたん勤怠管理給与_'+iso(r[0])+'_'+iso(r[1])+'.csv';a.click();URL.revokeObjectURL(a.href)}
+function printReport(){Q('printAll').classList.remove('hide');window.print();setTimeout(()=>Q('printAll').classList.add('hide'),500)}
+function init(){
+  const st=Q('staff');
+  if(st){
+    st.addEventListener('change',render);
+    st.addEventListener('input',render);
+  }
+  setInterval(()=>{
+    const c=Q('clock');
+    if(c)c.textContent=new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+  },1000);
+
+  rs();
+
+  if(cloudSession())syncCloud();
+
+  window.addEventListener('focus',()=>{
+    if(cloudSession())syncCloud();
+  });
+  window.addEventListener('online',()=>{
+    if(cloudSession())syncCloud(true);
+  });
+  document.addEventListener('visibilitychange',()=>{
+    if(!document.hidden&&cloudSession())syncCloud();
+  });
+
+  // 30秒ごとにクラウドを確認。
+  // 自分の未同期データ再送だけでなく、他端末の変更も自動で取り込む。
+  setInterval(()=>{
+    if(cloudSession()&&!cloudBusy)syncCloud(false);
+  },30000);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+</script><style>#masterSetupBtn{position:fixed;right:14px;bottom:14px;z-index:9000;border:0;border-radius:999px;padding:12px 16px;background:#111;color:#fff;font-weight:700}#masterSetup{position:fixed;inset:0;background:#0008;z-index:9998;display:none;align-items:center;justify-content:center;padding:18px}#masterSetup.open{display:flex}#masterSetup .box{background:#fff;border-radius:18px;padding:20px;width:min(520px,100%);max-height:90vh;overflow:auto}#masterSetup label{display:block;font-weight:700;margin-top:12px}#masterSetup input,#masterSetup select{width:100%;box-sizing:border-box;padding:11px;border:1px solid #ccc;border-radius:10px;margin-top:5px}#masterSetup .buttons{display:flex;gap:8px;margin-top:18px}#masterSetup .buttons button{flex:1;padding:12px;border:0;border-radius:10px;font-weight:700}.msSave{background:#111;color:#fff}.msNote{font-size:12px;color:#666}</style>
+<button id="masterSetupBtn" type="button">⚙️ 初期設定</button><div id="masterSetup"><div class="box"><h2>YUTORU 初期設定</h2>
+<label>店舗名<input id="msShop" placeholder="例：〇〇レストラン"></label>
+<label>計算単位<select id="msRound"><option value="1">実時刻（1分）</option><option value="5">5分単位</option><option value="10">10分単位</option><option value="15">15分単位</option><option value="30">30分単位</option></select></label>
+<label>締め日<input id="msClose" type="number" min="1" max="31" value="20"></label>
+<label>残業基準（時間/日）<input id="msOt" type="number" step=".25" value="8"></label>
+<label>深夜開始<input id="msNightStart" type="time" value="22:00"></label><label>深夜終了<input id="msNightEnd" type="time" value="05:00"></label>
+<label>Supabase Project URL<input id="msUrl" placeholder="https://xxxxx.supabase.co"></label><label>Supabase Publishable Key<input id="msKey" type="password" placeholder="sb_publishable_..."></label>
+<p class="msNote">販売者の接続情報・スタッフ情報は含まれていません。secret/service_role keyは入力しないでください。</p>
+<div class="buttons"><button id="msCancel" type="button">閉じる</button><button id="msSave" class="msSave" type="button">保存</button></div><p id="msMsg"></p></div></div>
+<script>
+const MASTER_SETTINGS_KEY='attendance_master_settings_v1';
+function masterSettings(){try{return Object.assign({roundUnit:15,closeDay:20,overtimeHours:8,nightStart:'22:00',nightEnd:'05:00'},JSON.parse(localStorage.getItem(MASTER_SETTINGS_KEY)||'{}'))}catch(e){return {roundUnit:15,closeDay:20,overtimeHours:8,nightStart:'22:00',nightEnd:'05:00'}}}
+masterSetupBtn.onclick=()=>{let s=masterSettings();msShop.value=s.shopName||'';msRound.value=s.roundUnit||15;msClose.value=s.closeDay||20;msOt.value=s.overtimeHours||8;msNightStart.value=s.nightStart||'22:00';msNightEnd.value=s.nightEnd||'05:00';msUrl.value=s.supabaseUrl||'';msKey.value=s.supabaseKey||'';masterSetup.classList.add('open')};
+msCancel.onclick=()=>masterSetup.classList.remove('open');
+msSave.onclick=()=>{localStorage.setItem(MASTER_SETTINGS_KEY,JSON.stringify({shopName:msShop.value.trim(),roundUnit:+msRound.value,closeDay:+msClose.value,overtimeHours:+msOt.value,nightStart:msNightStart.value,nightEnd:msNightEnd.value,supabaseUrl:msUrl.value.trim(),supabaseKey:msKey.value.trim()}));msMsg.textContent='保存しました ✓';};
+</script>
+<style>
+#licenseGate{display:none!important;position:fixed;inset:0;z-index:20000;background:linear-gradient(180deg,#f8fafc,#eef2f7);display:flex;align-items:center;justify-content:center;padding:18px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+#licenseGate.hide{display:none!important}
+#licenseGate .lgCard{width:min(460px,100%);background:#fff;border-radius:22px;padding:22px;box-shadow:0 16px 50px #0f172a22;border:1px solid #e5e7eb}
+#licenseGate h1{margin:0 0 8px;font-size:24px}
+#licenseGate .sub{margin:0 0 18px;color:#64748b;font-size:14px;line-height:1.6}
+#licenseGate label{display:block;font-weight:700;margin:12px 0 6px}
+#licenseGate input{width:100%;box-sizing:border-box;padding:13px;border:1px solid #cbd5e1;border-radius:12px;font-size:16px}
+#licenseGate button{width:100%;border:0;border-radius:12px;padding:13px;margin-top:14px;background:#111827;color:#fff;font-size:16px;font-weight:800}
+#licenseGate .msg{margin-top:12px;font-size:13px;line-height:1.5;color:#475569}
+#licenseGate .error{color:#b91c1c}
+#licenseGate .ok{color:#047857}
+#licenseBadge{position:fixed;left:10px;bottom:10px;z-index:8500;background:#fff;border:1px solid #e5e7eb;border-radius:999px;padding:7px 10px;font-size:11px;color:#475569;box-shadow:0 2px 10px #0001;display:none}
+</style>
+<div id="licenseGate">
+  <div class="lgCard">
+    <div style="font-size:12px;font-weight:800;color:#64748b;letter-spacing:.08em">YUTORU</div>
+    <h1 id="lgTitle">ライセンス認証</h1>
+    <p class="sub">この店舗専用URLに発行されたライセンスで認証します。別店舗のURL・ライセンスでは利用できません。</p>
+    <label>店舗ID</label>
+    <input id="lgStore" readonly placeholder="専用URLから自動取得">
+    <label>ライセンスキー</label>
+    <input id="lgKey" autocapitalize="characters" autocomplete="off" placeholder="XXXX-XXXX-XXXX-XXXX">
+    <button id="lgVerify" type="button">認証して開始</button>
+<button id="hardDemoBtn" type="button"
+style="width:100%;margin-top:12px;border:1px solid #0f766e;background:#ecfdf5;color:#0f766e;font-weight:800;border-radius:12px;padding:14px 16px;font-size:16px;">
+デモ画面を開く
+</button>
+    <div id="lgMsg" class="msg"></div>
+    <div class="msg" style="border-top:1px solid #e5e7eb;padding-top:12px;margin-top:16px">
+      開発確認用：URL末尾に <b>?shop=demo-store&demo=1</b> を付けるとデモ認証できます。<br>
+      本番ではSupabase Edge Function側でライセンスを検証します。
+    </div>
+  </div>
+</div>
+<div id="licenseBadge"></div>
+<script>
+// Sales Master v2 license architecture
+// 本番時に Vercel/Supabase Edge Function のURLを設定する。secret/service_role keyをHTMLへ入れない。
+const LICENSE_API_URL = "";
+const LICENSE_SESSION_KEY = "yutoru_sales_license_session_v3";
+
+function qs(name){ return new URLSearchParams(location.search).get(name) || ""; }
+function currentShopSlug(){ return qs("shop").trim(); }
+function demoMode(){ return qs("demo")==="1"; }
+
+function savedLicenseSession(){
+  try{return JSON.parse(localStorage.getItem(LICENSE_SESSION_KEY)||"null")}catch(e){return null}
+}
+function saveLicenseSession(x){localStorage.setItem(LICENSE_SESSION_KEY,JSON.stringify(x))}
+function clearLicenseSession(){localStorage.removeItem(LICENSE_SESSION_KEY)}
+
+async function verifyLicenseServer(shop,key){
+  if(demoMode()){
+    await new Promise(r=>setTimeout(r,350));
+    if(shop==="demo-store" && key.replace(/\s/g,"").toUpperCase()==="DEMO-2026-STORE-01"){
+      let dp=(new URLSearchParams(location.search).get("plan")||"standard"); return {ok:true,storeId:"00000000-0000-4000-8000-000000000001",shopSlug:"demo-store",shopName:"デモ店舗",plan:dp,monthlyPrice:dp==="founders"?1980:dp==="plus"?5980:3980,token:"demo-token",expiresAt:Date.now()+86400000};
+    }
+    return {ok:false,message:"デモキーは DEMO-2026-STORE-01 です"};
+  }
+  if(!LICENSE_API_URL) return {ok:false,message:"認証サーバーはまだ未接続です。販売用Supabase作成後に接続します。"};
+  const res=await fetch(LICENSE_API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({shopSlug:shop,licenseKey:key})});
+  if(!res.ok) return {ok:false,message:"認証に失敗しました"};
+  return await res.json();
+}
+async function revalidateSession(s){
+  if(!s || !s.shopSlug || s.shopSlug!==currentShopSlug()) return false;
+  if(demoMode()) return Number(s.expiresAt||0)>Date.now();
+  if(!LICENSE_API_URL) return false;
+  try{
+    const res=await fetch(LICENSE_API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({shopSlug:s.shopSlug,sessionToken:s.token,action:"session"})});
+    const j=await res.json(); return !!j.ok;
+  }catch(e){return false}
+}
+function unlockApp(s){
+  licenseGate.classList.add("hide");
+  licenseBadge.style.display="block";
+  licenseBadge.textContent=(s.shopName||s.shopSlug)+" ・ "+((s.plan||"standard")==="founders"?"Founders 10":(s.plan||"standard")==="plus"?"Plus":"Standard")+" ・ ライセンス認証済";
+  document.documentElement.dataset.storeId=s.storeId||"";
+  window.SALES_TENANT={storeId:s.storeId,shopSlug:s.shopSlug,shopName:s.shopName,plan:s.plan||"standard",monthlyPrice:s.monthlyPrice||3980,token:s.token}; document.documentElement.dataset.plan=s.plan||"standard"; setTimeout(()=>{if(window.plusSettingsBtn) plusSettingsBtn.style.display=(window.SALES_TENANT.plan==="plus"?"block":"none")},0);
+}
+function yutoruHasFeature(feature){
+  const p=(window.SALES_TENANT?.plan||"standard");
+  if(feature==="social_insurance") return p==="plus";
+  return true;
+}
+window.yutoruHasFeature=yutoruHasFeature;
+async function initLicenseGate(){
+  const shop=currentShopSlug();
+  lgStore.value=shop;
+  if(!shop){lgMsg.className="msg error";lgMsg.textContent="専用URLが正しくありません（店舗IDがありません）。";return}
+  const s=savedLicenseSession();
+  if(await revalidateSession(s)){unlockApp(s);return}
+  clearLicenseSession();
+}
+lgVerify.onclick=async()=>{
+  const shop=currentShopSlug(), key=lgKey.value.trim();
+  if(!shop || !key){lgMsg.className="msg error";lgMsg.textContent="店舗IDとライセンスキーを確認してください。";return}
+  lgVerify.disabled=true; lgMsg.className="msg"; lgMsg.textContent="認証中…";
+  try{
+    const j=await verifyLicenseServer(shop,key);
+    if(!j.ok){lgMsg.className="msg error";lgMsg.textContent=j.message||"ライセンスが無効です。";return}
+    saveLicenseSession(j); lgMsg.className="msg ok";lgMsg.textContent="認証しました ✓";
+    setTimeout(()=>unlockApp(j),300);
+  }catch(e){lgMsg.className="msg error";lgMsg.textContent="認証サーバーに接続できませんでした。"}
+  finally{lgVerify.disabled=false}
+};
+initLicenseGate();
+</script>
+
+
+<style>
+#plusSettingsBtn{position:fixed;right:14px;bottom:68px;z-index:9000;border:0;border-radius:999px;padding:12px 16px;background:#0f766e;color:#fff;font-weight:800}
+#plusSettings{position:fixed;inset:0;background:#0008;z-index:9997;display:none;align-items:center;justify-content:center;padding:16px}
+#plusSettings.open{display:flex}
+#plusSettings .psBox{background:#fff;border-radius:20px;padding:18px;width:min(620px,100%);max-height:90vh;overflow:auto}
+.psGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.psRow{border:1px solid #e5e7eb;border-radius:14px;padding:12px;margin-top:10px}
+.psRow h3{margin:0 0 8px;font-size:15px}.psRow select,.psRow input{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:10px}
+.psHint{font-size:12px;color:#64748b;line-height:1.6}.psActions{display:flex;gap:8px;margin-top:16px}.psActions button{flex:1}
+@media(max-width:560px){.psGrid{grid-template-columns:1fr}}
+</style>
+<button id="plusSettingsBtn" type="button" style="display:none">＋ Plus 保険設定</button>
+<div id="plusSettings">
+ <div class="psBox">
+  <h2 style="margin-top:0">YUTORU Plus｜社会保険等の設定</h2>
+  <p class="psHint">会社共通の初期値を登録できます。各スタッフ側で個別に上書きできる設計です。設定値は顧問税理士・社会保険労務士等にご確認ください。</p>
+  <div id="psRows"></div>
+  <div class="psActions"><button id="psClose" type="button" style="background:#64748b">閉じる</button><button id="psSave" type="button" style="background:#0f766e">保存</button></div>
+  <p id="psMsg" class="psHint"></p>
+ </div>
+</div>
+<script>
+const PLUS_INSURANCE_KEY="yutoru_plus_insurance_settings_v1";
+const PLUS_ITEMS=[
+ ["health","健康保険"],["care","介護保険"],["pension","厚生年金"],["employment","雇用保険"]
+];
+function plusLoad(){try{return JSON.parse(localStorage.getItem(PLUS_INSURANCE_KEY)||"{}")}catch(e){return {}}}
+function plusModeOptions(v){return `<option value="none" ${v==="none"?"selected":""}>対象外</option><option value="rate" ${v==="rate"?"selected":""}>料率（％）</option><option value="fixed" ${v==="fixed"?"selected":""}>月額固定（円）</option><option value="staff" ${v==="staff"?"selected":""}>スタッフ個別設定</option>`}
+function plusRender(){
+ let d=plusLoad();
+ psRows.innerHTML=PLUS_ITEMS.map(([k,n])=>{let x=d[k]||{mode:"none",value:0};return `<div class="psRow"><h3>${n}</h3><div class="psGrid"><label>計算方法<select data-psmode="${k}">${plusModeOptions(x.mode)}</select></label><label>会社共通の値<input data-psvalue="${k}" type="number" step="0.001" min="0" value="${Number(x.value||0)}" placeholder="％ または 円"></label></div><p class="psHint">「スタッフ個別設定」の場合は、スタッフごとの設定値を優先します。</p></div>`}).join("");
+}
+plusSettingsBtn.onclick=()=>{
+ if(!window.yutoruHasFeature?.("social_insurance")){alert("社会保険等の設定はYUTORU Plusで利用できます。");return}
+ plusRender();plusSettings.classList.add("open");
+};
+psClose.onclick=()=>plusSettings.classList.remove("open");
+psSave.onclick=()=>{
+ let d={};
+ PLUS_ITEMS.forEach(([k])=>{let m=document.querySelector(`[data-psmode="${k}"]`),v=document.querySelector(`[data-psvalue="${k}"]`);d[k]={mode:m.value,value:Number(v.value||0)}})
+ localStorage.setItem(PLUS_INSURANCE_KEY,JSON.stringify(d));psMsg.textContent="保存しました ✓";
+};
+</script>
+
+<style>
+#demoPlanSwitcher{
+  position:fixed;top:10px;right:10px;z-index:10050;
+  background:#ffffffee;border:1px solid #cbd5e1;border-radius:14px;
+  padding:10px;box-shadow:0 4px 18px #0002;font-size:12px;
+  display:none;min-width:185px
+}
+#demoPlanSwitcher b{display:block;margin-bottom:6px;color:#0f172a}
+#demoPlanSwitcher select{
+  width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:9px;
+  font-size:13px;background:#fff
+}
+#demoPlanSwitcher .demoNote{font-size:10px;color:#64748b;margin-top:5px;line-height:1.4}
+</style>
+<div id="demoPlanSwitcher">
+  <b>デモプラン切替</b>
+  <select id="demoPlanSelect">
+    <option value="founders">Founders 10｜¥1,980</option>
+    <option value="standard">Standard｜¥3,980</option>
+    <option value="plus">Plus｜¥5,980</option>
+  </select>
+  <div class="demoNote">開発確認用。Plusで保険設定が有効になります。</div>
+</div>
+<script>
+function applyDemoPlan(plan){
+  if(!window.SALES_TENANT) window.SALES_TENANT={};
+  window.SALES_TENANT.plan=plan;
+  window.SALES_TENANT.monthlyPrice=plan==="founders"?1980:plan==="plus"?5980:3980;
+  document.documentElement.dataset.plan=plan;
+  if(typeof licenseBadge!=="undefined" && licenseBadge){
+    const nm=window.SALES_TENANT.shopName||"デモ店舗";
+    const label=plan==="founders"?"Founders 10":plan==="plus"?"Plus":"Standard";
+    licenseBadge.style.display="block";
+    licenseBadge.textContent=nm+" ・ "+label+" ・ デモ";
+  }
+  if(typeof plusSettingsBtn!=="undefined" && plusSettingsBtn){
+    plusSettingsBtn.style.display=plan==="plus"?"block":"none";
+  }
+}
+function initDemoPlanSwitcher(){
+  const sp=new URLSearchParams(location.search);
+  if(sp.get("demo")!=="1") return;
+  demoPlanSwitcher.style.display="block";
+  const current=sp.get("plan")||window.SALES_TENANT?.plan||"standard";
+  demoPlanSelect.value=current;
+  applyDemoPlan(current);
+  demoPlanSelect.onchange=()=>applyDemoPlan(demoPlanSelect.value);
+}
+window.addEventListener("load",()=>setTimeout(initDemoPlanSwitcher,100));
+</script>
+
+<style>
+#demoEntryBtn{
+  width:100%;
+  margin-top:10px;
+  border:1px solid #0f766e;
+  background:#ecfdf5;
+  color:#0f766e;
+  font-weight:800;
+  border-radius:12px;
+  padding:14px 16px;
+  font-size:16px;
+}
+</style>
+<script>
+(function(){
+  function addDemoEntryButton(){
+    const authBox=document.querySelector(".license-card, .auth-card, #licenseGate, .card");
+    const startBtn=[...document.querySelectorAll("button")].find(b=>b.textContent.includes("認証して開始"));
+    if(!startBtn || document.getElementById("demoEntryBtn")) return;
+    const btn=document.createElement("button");
+    btn.id="demoEntryBtn";
+    btn.type="button";
+    btn.textContent="デモ画面を開く";
+    startBtn.insertAdjacentElement("afterend",btn);
+    btn.onclick=()=>{
+      const u=new URL(location.href);
+      u.searchParams.set("shop","demo-store");
+      u.searchParams.set("demo","1");
+      u.searchParams.set("plan","standard");
+      location.href=u.toString();
+    };
+  }
+  window.addEventListener("load",()=>setTimeout(addDemoEntryButton,80));
+})();
+</script>
+
+<script>
+(function(){
+  function prefillDemo(){
+    const sp=new URLSearchParams(location.search);
+    if(sp.get("demo")!=="1") return;
+    const inputs=[...document.querySelectorAll("input")];
+    const lic=inputs.find(i=>i.placeholder&&i.placeholder.includes("XXXX-XXXX"));
+    if(lic && !lic.value) lic.value="DEMO-2026-STORE-01";
+  }
+  window.addEventListener("load",()=>setTimeout(prefillDemo,120));
+})();
+</script>
+
+
+<script>
+window.addEventListener("load",()=>{
+  const b=document.getElementById("hardDemoBtn");
+  if(!b) return;
+
+  b.onclick=()=>{
+    const demoSession={
+      ok:true,
+      storeId:"00000000-0000-4000-8000-000000000001",
+      shopSlug:"demo-store",
+      shopName:"デモ店舗",
+      plan:"standard",
+      monthlyPrice:3980,
+      token:"demo-token",
+      expiresAt:Date.now()+86400000
+    };
+
+    try{ saveLicenseSession(demoSession); }catch(e){}
+    unlockApp(demoSession);
+
+    // Show and activate the in-page demo plan switcher without changing/reloading the URL.
+    if(window.demoPlanSwitcher) demoPlanSwitcher.style.display="block";
+    if(window.demoPlanSelect){
+      demoPlanSelect.value="standard";
+      demoPlanSelect.onchange=()=>applyDemoPlan(demoPlanSelect.value);
+    }
+    if(typeof applyDemoPlan==="function") applyDemoPlan("standard");
+  };
+});
+</script>
+
+<script>
+window.addEventListener("load",()=>{
+  const demoSession={
+    ok:true,
+    storeId:"00000000-0000-4000-8000-000000000001",
+    shopSlug:"demo-store",
+    shopName:"デモ店舗",
+    plan:"standard",
+    monthlyPrice:3980,
+    token:"demo-token",
+    expiresAt:Date.now()+86400000
+  };
+
+  try{
+    if (typeof unlockApp === "function") unlockApp(demoSession);
+    else {
+      const gate=document.getElementById("licenseGate");
+      if(gate) gate.style.display="none";
+      window.SALES_TENANT=demoSession;
+    }
+  }catch(e){
+    const gate=document.getElementById("licenseGate");
+    if(gate) gate.style.display="none";
+    window.SALES_TENANT=demoSession;
+  }
+
+  const sw=document.getElementById("demoPlanSwitcher");
+  if(sw) sw.style.display="block";
+
+  const sel=document.getElementById("demoPlanSelect");
+  if(sel){
+    sel.value="standard";
+    sel.onchange=()=>{
+      if(typeof applyDemoPlan==="function") applyDemoPlan(sel.value);
+    };
+  }
+  if(typeof applyDemoPlan==="function") applyDemoPlan("standard");
+});
+</script>
+
+<script>
+(function(){
+  function planLabel(p){return p==="founders"?"Founders 10":p==="plus"?"Plus":"Standard";}
+  function setTopPlan(p){
+    if(!window.SALES_TENANT) window.SALES_TENANT={};
+    window.SALES_TENANT.plan=p;
+    window.SALES_TENANT.monthlyPrice=p==="founders"?1980:p==="plus"?5980:3980;
+    document.documentElement.dataset.plan=p;
+    const badge=document.getElementById("currentPlanBadge");
+    const sel=document.getElementById("topPlanSelect");
+    const plusPanel=document.getElementById("plusAdminPanel");
+    if(badge) badge.textContent=planLabel(p);
+    if(sel) sel.value=p;
+    if(plusPanel) plusPanel.style.display=(p==="plus"?"block":"none");
+    if(window.plusSettingsBtn) plusSettingsBtn.style.display="none";
+  }
+  window.addEventListener("load",()=>{
+    const sel=document.getElementById("topPlanSelect");
+    if(sel) sel.onchange=()=>setTopPlan(sel.value);
+    setTopPlan(window.SALES_TENANT?.plan||"standard");
+    const b=document.getElementById("openPlusSettingsFromPanel");
+    if(b) b.onclick=()=>{
+      if(typeof plusRender==="function") plusRender();
+      const ps=document.getElementById("plusSettings");
+      if(ps) ps.classList.add("open");
+    };
+  });
+})();
+</script>
+
+<style>
+#deviceManager{margin:14px;background:#fff;border:1px solid #cbd5e1;border-radius:18px;padding:16px}
+#deviceManager h3{margin:0 0 6px}.dmNote{font-size:12px;color:#64748b;line-height:1.6}
+.dmCards{display:grid;gap:8px;margin:12px 0}.dmCard{border:1px solid #e2e8f0;border-radius:13px;padding:11px}
+.dmCard b{display:block}.dmState{font-size:12px;color:#64748b;margin-top:3px}
+.dmBtn{width:100%;border:0;border-radius:12px;padding:12px;font-weight:800;background:#0f766e;color:#fff}
+#deviceConfirm{position:fixed;inset:0;background:#0008;z-index:12000;display:none;align-items:center;justify-content:center;padding:16px}
+#deviceConfirm.open{display:flex}.dcBox{background:#fff;width:min(560px,100%);max-height:90vh;overflow:auto;border-radius:20px;padding:18px}
+.dcWarn{background:#fff7ed;border:1px solid #fed7aa;border-radius:13px;padding:12px;font-size:13px;line-height:1.65}
+.dcActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.dcActions button{padding:12px;border:0;border-radius:11px;font-weight:800}
+</style>
+<section id="deviceManager">
+ <h3>🔐 端末管理</h3>
+ <p class="dmNote">1店舗につき、店舗打刻端末1台＋管理者端末2台まで登録できます。</p>
+ <div class="dmCards" id="dmCards"></div>
+ <button class="dmBtn" id="dmRegister" type="button">この端末を登録</button>
+</section>
+<div id="deviceConfirm">
+ <div class="dcBox">
+  <h2 style="margin-top:0">端末登録の確認</h2>
+  <div class="dcWarn">
+   <b>登録前にご確認ください</b><br>
+   ・店舗端末は、店舗に常設するiPad／Androidタブレット等を推奨します。<br>
+   ・個人のスマートフォンを店舗打刻端末に登録しないことをおすすめします。<br>
+   ・店舗端末はスタッフの打刻専用です。給与・勤怠の修正や管理設定はできません。<br>
+   ・管理者端末は勤怠確認・修正、スタッフ管理、給与確認・設定ができます。<br>
+   ・紛失・買い替え時は管理者から登録解除してください。<br>
+   ・ブラウザデータの削除等により再登録が必要になる場合があります。
+  </div>
+  <label style="display:block;margin-top:12px;font-weight:800">端末の種類
+   <select id="dcRole" style="width:100%;padding:11px;margin-top:5px;border:1px solid #cbd5e1;border-radius:10px">
+    <option value="punch">店舗打刻端末（1台）</option>
+    <option value="admin">管理者端末（2台まで）</option>
+   </select>
+  </label>
+  <label style="display:block;margin-top:10px;font-weight:800">端末名
+   <input id="dcName" placeholder="例：店舗iPad／オーナーiPhone" style="width:100%;box-sizing:border-box;padding:11px;margin-top:5px;border:1px solid #cbd5e1;border-radius:10px">
+  </label>
+  <label style="display:flex;gap:8px;align-items:flex-start;margin-top:13px;font-size:13px">
+   <input id="dcAgree" type="checkbox" style="margin-top:3px"> <span>上記の注意事項を確認しました。</span>
+  </label>
+  <div class="dcActions"><button id="dcCancel" type="button" style="background:#e2e8f0">キャンセル</button><button id="dcSave" type="button" style="background:#0f766e;color:#fff">この端末を登録</button></div>
+ </div>
+</div>
+
+<script>
+(() => {
+  const KEY = "yutoru_demo_devices_v12";
+
+  const $ = (id) => document.getElementById(id);
+
+  function loadDevices(){
+    try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
+    catch(e){ return []; }
+  }
+
+  function saveDevices(list){
+    localStorage.setItem(KEY, JSON.stringify(list));
+  }
+
+  function renderDevices(){
+    const cards = $("dmCards");
+    if(!cards) return;
+
+    const d = loadDevices();
+    const punch = d.filter(x => x.role === "punch");
+    const admins = d.filter(x => x.role === "admin");
+
+    const slots = [
+      ["店舗打刻端末", punch[0]],
+      ["管理者端末 1", admins[0]],
+      ["管理者端末 2", admins[1]]
+    ];
+
+    cards.innerHTML = slots.map(([label, x]) => `
+      <div class="dmCard">
+        <b>${label}</b>
+        <div class="dmState">${x ? "登録済み：" + x.name : "未登録"}</div>
+        ${x ? `<button type="button" data-remove="${x.id}" style="margin-top:7px;border:0;border-radius:8px;padding:7px 9px">登録解除</button>` : ""}
+      </div>
+    `).join("");
+
+    cards.querySelectorAll("[data-remove]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const next = loadDevices().filter(x => x.id !== btn.dataset.remove);
+        saveDevices(next);
+        renderDevices();
+      });
+    });
+  }
+
+  function openModal(){
+    const modal = $("deviceConfirm");
+    const agree = $("dcAgree");
+    const name = $("dcName");
+    if(agree) agree.checked = false;
+    if(name) name.value = "";
+    if(modal){
+      modal.style.display = "flex";
+      modal.classList.add("open");
+    }
+  }
+
+  function closeModal(){
+    const modal = $("deviceConfirm");
+    if(modal){
+      modal.classList.remove("open");
+      modal.style.display = "none";
+    }
+  }
+
+  function registerDevice(){
+    const agree = $("dcAgree");
+    const nameEl = $("dcName");
+    const roleEl = $("dcRole");
+
+    if(!agree?.checked){
+      alert("注意事項を確認し、チェックを入れてください。");
+      return;
+    }
+
+    const name = (nameEl?.value || "").trim();
+    if(!name){
+      alert("端末名を入力してください。");
+      return;
+    }
+
+    const role = roleEl?.value || "punch";
+    const d = loadDevices();
+
+    if(role === "punch" && d.filter(x => x.role === "punch").length >= 1){
+      alert("店舗打刻端末は1台までです。");
+      return;
+    }
+
+    if(role === "admin" && d.filter(x => x.role === "admin").length >= 2){
+      alert("管理者端末は2台までです。");
+      return;
+    }
+
+    d.push({
+      id: String(Date.now()),
+      role,
+      name,
+      registeredAt: new Date().toISOString()
+    });
+
+    saveDevices(d);
+    closeModal();
+    renderDevices();
+  }
+
+  window.addEventListener("load", () => {
+    $("dmRegister")?.addEventListener("click", openModal);
+    $("dcCancel")?.addEventListener("click", closeModal);
+    $("dcSave")?.addEventListener("click", registerDevice);
+    renderDevices();
+  });
+})();
+</script>
+</body></html>
