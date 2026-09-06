@@ -2010,4 +2010,111 @@ document.addEventListener("click", function(e){
   printReport(name);
 });
 </script>
+<!-- YUTORU v25: Plus スタッフ別 税・社会保険設定 -->
+<style>
+#plusStaffBtn{position:fixed;right:14px;bottom:122px;z-index:9000;border:0;border-radius:999px;padding:12px 16px;background:#115e59;color:#fff;font-weight:800;display:none;box-shadow:0 4px 16px #0002}
+#plusStaffModal{position:fixed;inset:0;background:#0009;z-index:10020;display:none;align-items:center;justify-content:center;padding:14px}
+#plusStaffModal.open{display:flex}
+#plusStaffModal .pstBox{background:#fff;border-radius:20px;padding:18px;width:min(680px,100%);max-height:92vh;overflow:auto;box-shadow:0 18px 60px #0004}
+.pstTitle{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.pstTitle h2{margin:0;font-size:20px}.pstBadge{font-size:11px;background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;border-radius:999px;padding:6px 9px;font-weight:800;white-space:nowrap}
+.pstSection{border:1px solid #e5e7eb;border-radius:15px;padding:13px;margin-top:12px}.pstSection h3{margin:0 0 10px;font-size:15px}.pstGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.pstGrid.one{grid-template-columns:1fr}
+.pstField{display:block;font-size:12px;font-weight:800;color:#334155}.pstField input,.pstField select{width:100%;box-sizing:border-box;margin-top:5px;padding:11px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;font-size:15px}
+.pstCheck{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:800}.pstCheck input{width:20px;height:20px}.pstHint{font-size:11px;color:#64748b;line-height:1.55;margin:7px 0 0}.pstAuto{font-size:12px;color:#0f766e;font-weight:800;margin-top:8px}.pstActions{display:flex;gap:8px;margin-top:16px}.pstActions button{flex:1;border:0;border-radius:11px;padding:12px;font-weight:800}.pstClose{background:#e2e8f0;color:#0f172a}.pstSave{background:#0f766e;color:#fff}.pstDanger{background:#fff1f2;color:#be123c;border:1px solid #fecdd3!important}.pstDisabled{opacity:.55;pointer-events:none}
+@media(max-width:560px){.pstGrid{grid-template-columns:1fr}.pstTitle{display:block}.pstBadge{display:inline-block;margin-top:8px}}
+</style>
+<button id="plusStaffBtn" type="button">👤 Plus スタッフ保険</button>
+<div id="plusStaffModal" aria-hidden="true">
+ <div class="pstBox">
+  <div class="pstTitle"><h2>YUTORU Plus｜スタッフ別 税・社会保険</h2><span class="pstBadge" id="pstMasterBadge">税・保険マスター：2026年度 ✓</span></div>
+  <p class="pstHint">公式マスターから料率を取得する販売版を想定した画面です。現在のデモでは設定を端末内に保存します。料率そのものをスタッフごとに入力させず、必要な場合だけ固定額・手動上書きを使う設計です。</p>
+
+  <div class="pstSection"><h3>対象スタッフ</h3>
+   <div class="pstGrid"><label class="pstField">スタッフ<select id="pstStaff"></select></label><label class="pstField">生年月日<input id="pstDob" type="date"></label></div>
+  </div>
+
+  <div class="pstSection"><h3>税設定</h3>
+   <div class="pstGrid"><label class="pstField">源泉徴収区分<select id="pstTaxClass"><option value="kou">甲欄</option><option value="otsu">乙欄</option></select></label><label class="pstField">扶養人数<input id="pstDependents" type="number" min="0" max="7" step="1" value="0"></label></div>
+   <p class="pstHint">源泉徴収税額は中央の税マスターを利用する想定。給与確定時に使用したマスターバージョンを保存し、後日の料率改定で過去明細が変わらないようにします。</p>
+  </div>
+
+  <div class="pstSection"><h3>雇用保険</h3>
+   <label class="pstCheck"><input id="pstEmployment" type="checkbox"> 雇用保険に加入</label>
+   <label class="pstField" style="margin-top:9px">事業区分<select id="pstEmploymentCat"><option value="general">一般の事業</option><option value="agri">農林水産・清酒製造</option><option value="construction">建設の事業</option></select></label>
+   <p class="pstHint">料率は雇用保険マスターから自動適用する想定です。</p>
+  </div>
+
+  <div class="pstSection"><h3>厚生年金</h3>
+   <label class="pstCheck"><input id="pstPension" type="checkbox"> 厚生年金に加入</label>
+   <label class="pstField" style="margin-top:9px">標準報酬月額<input id="pstPensionMonthly" type="number" min="0" step="1000" placeholder="例：220000"></label>
+  </div>
+
+  <div class="pstSection"><h3>健康保険</h3>
+   <label class="pstField">健康保険の種類<select id="pstHealthMode"><option value="none">加入なし</option><option value="kyokai">協会けんぽ</option><option value="fixed">月額固定型・その他（東食国保など）</option></select></label>
+   <div id="pstKyokaiFields" style="margin-top:10px">
+    <div class="pstGrid"><label class="pstField">都道府県支部<select id="pstKyokaiBranch"></select></label><label class="pstField">標準報酬月額<input id="pstHealthMonthly" type="number" min="0" step="1000" placeholder="例：220000"></label></div>
+    <p class="pstHint">協会けんぽの都道府県別料率は中央マスターから自動適用する想定です。</p>
+   </div>
+   <div id="pstFixedFields" style="margin-top:10px;display:none"><div class="pstGrid"><label class="pstField">保険名称<input id="pstFixedLabel" placeholder="例：東食国保"></label><label class="pstField">本人負担 月額固定<input id="pstFixedAmount" type="number" min="0" step="1" placeholder="例：18500"></label></div></div>
+  </div>
+
+  <div class="pstSection"><h3>介護保険</h3>
+   <label class="pstField">判定方法<select id="pstCareMode"><option value="auto">生年月日から自動判定</option><option value="on">加入扱いにする（手動）</option><option value="off">対象外にする（手動）</option></select></label>
+   <div id="pstCareStatus" class="pstAuto">生年月日を入力すると判定を表示します。</div>
+   <p class="pstHint">実運用では適用条件・資格情報を含めてサーバー側で管理し、必要時のみ管理者が上書きできるようにします。</p>
+  </div>
+
+  <div class="pstSection"><h3>マスター適用情報</h3>
+   <div class="pstGrid"><label class="pstField">税マスター<input id="pstTaxMaster" value="2026-withholding-v1" readonly></label><label class="pstField">保険マスター<input id="pstInsuranceMaster" value="2026-insurance-v1" readonly></label></div>
+   <p class="pstHint">本番では effective_from / version / source / verified / published をサーバーで保持し、給与確定時に適用バージョンをスナップショット保存します。</p>
+  </div>
+
+  <div class="pstActions"><button id="pstClose" class="pstClose" type="button">閉じる</button><button id="pstClear" class="pstDanger" type="button">このスタッフ設定を初期化</button><button id="pstSave" class="pstSave" type="button">保存</button></div>
+  <p id="pstMsg" class="pstHint"></p>
+ </div>
+</div>
+<script>
+(() => {
+ const KEY="yutoru_plus_staff_insurance_v25";
+ const PREFS=["北海道","青森","岩手","宮城","秋田","山形","福島","茨城","栃木","群馬","埼玉","千葉","東京","神奈川","新潟","富山","石川","福井","山梨","長野","岐阜","静岡","愛知","三重","滋賀","京都","大阪","兵庫","奈良","和歌山","鳥取","島根","岡山","広島","山口","徳島","香川","愛媛","高知","福岡","佐賀","長崎","熊本","大分","宮崎","鹿児島","沖縄"];
+ const el=id=>document.getElementById(id);
+ function loadAll(){try{return JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){return {}}}
+ function saveAll(v){localStorage.setItem(KEY,JSON.stringify(v))}
+ function isPlus(){return (window.SALES_TENANT?.plan||document.documentElement.dataset.plan)==="plus"}
+ function activeStaff(){try{return typeof staff==="function"?staff():[]}catch(e){return []}}
+ function ageOn(d, now=new Date()){
+   if(!d)return null; const b=new Date(d+"T00:00:00"); if(Number.isNaN(b.getTime()))return null;
+   let a=now.getFullYear()-b.getFullYear(); const m=now.getMonth()-b.getMonth(); if(m<0||(m===0&&now.getDate()<b.getDate()))a--; return a;
+ }
+ function careText(){
+   const mode=el("pstCareMode").value, a=ageOn(el("pstDob").value);
+   if(mode==="on") return "手動設定：介護保険を適用";
+   if(mode==="off") return "手動設定：介護保険は対象外";
+   if(a===null)return "生年月日を入力すると判定を表示します。";
+   return (a>=40&&a<65)?`自動判定：${a}歳 → 介護保険の対象として計算`:`自動判定：${a}歳 → 介護保険の対象外として計算`;
+ }
+ function healthToggle(){
+   const m=el("pstHealthMode").value;
+   el("pstKyokaiFields").style.display=m==="kyokai"?"block":"none";
+   el("pstFixedFields").style.display=m==="fixed"?"block":"none";
+ }
+ function defaults(){return {dob:"",taxClass:"kou",dependents:0,employment:false,employmentCategory:"general",pension:false,pensionMonthly:0,healthMode:"none",kyokaiBranch:"東京",healthMonthly:0,fixedLabel:"",fixedAmount:0,careMode:"auto",taxMaster:"2026-withholding-v1",insuranceMaster:"2026-insurance-v1",updatedAt:null}}
+ function readForm(){return {dob:el("pstDob").value,taxClass:el("pstTaxClass").value,dependents:Number(el("pstDependents").value||0),employment:el("pstEmployment").checked,employmentCategory:el("pstEmploymentCat").value,pension:el("pstPension").checked,pensionMonthly:Number(el("pstPensionMonthly").value||0),healthMode:el("pstHealthMode").value,kyokaiBranch:el("pstKyokaiBranch").value,healthMonthly:Number(el("pstHealthMonthly").value||0),fixedLabel:el("pstFixedLabel").value.trim(),fixedAmount:Number(el("pstFixedAmount").value||0),careMode:el("pstCareMode").value,taxMaster:el("pstTaxMaster").value,insuranceMaster:el("pstInsuranceMaster").value,updatedAt:new Date().toISOString()}}
+ function writeForm(v){v=Object.assign(defaults(),v||{});el("pstDob").value=v.dob||"";el("pstTaxClass").value=v.taxClass||"kou";el("pstDependents").value=Number(v.dependents||0);el("pstEmployment").checked=!!v.employment;el("pstEmploymentCat").value=v.employmentCategory||"general";el("pstPension").checked=!!v.pension;el("pstPensionMonthly").value=v.pensionMonthly||"";el("pstHealthMode").value=v.healthMode||"none";el("pstKyokaiBranch").value=v.kyokaiBranch||"東京";el("pstHealthMonthly").value=v.healthMonthly||"";el("pstFixedLabel").value=v.fixedLabel||"";el("pstFixedAmount").value=v.fixedAmount||"";el("pstCareMode").value=v.careMode||"auto";el("pstTaxMaster").value=v.taxMaster||"2026-withholding-v1";el("pstInsuranceMaster").value=v.insuranceMaster||"2026-insurance-v1";healthToggle();el("pstCareStatus").textContent=careText();el("pstMsg").textContent=v.updatedAt?"保存済み設定を読み込みました ✓":""}
+ function fillStaff(){const a=activeStaff();el("pstStaff").innerHTML=a.length?a.map(n=>`<option value="${String(n).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/\"/g,"&quot;")}">${String(n).replace(/&/g,"&amp;").replace(/</g,"&lt;")}</option>`).join(""):'<option value="">スタッフ未登録</option>'}
+ function loadSelected(){const n=el("pstStaff").value;writeForm(loadAll()[n]||defaults())}
+ function refreshBtn(){el("plusStaffBtn").style.display=isPlus()?"block":"none"}
+ el("pstKyokaiBranch").innerHTML=PREFS.map(p=>`<option value="${p}">${p}</option>`).join("");
+ el("plusStaffBtn").addEventListener("click",()=>{if(!isPlus()){alert("スタッフ別の社会保険設定はYUTORU Plusで利用できます。");return}fillStaff();loadSelected();el("plusStaffModal").classList.add("open");el("plusStaffModal").setAttribute("aria-hidden","false")});
+ el("pstClose").addEventListener("click",()=>{el("plusStaffModal").classList.remove("open");el("plusStaffModal").setAttribute("aria-hidden","true")});
+ el("pstStaff").addEventListener("change",loadSelected);el("pstHealthMode").addEventListener("change",healthToggle);el("pstCareMode").addEventListener("change",()=>el("pstCareStatus").textContent=careText());el("pstDob").addEventListener("change",()=>el("pstCareStatus").textContent=careText());
+ el("pstSave").addEventListener("click",()=>{const n=el("pstStaff").value;if(!n){alert("スタッフを選択してください");return}const all=loadAll();all[n]=readForm();saveAll(all);el("pstMsg").textContent=`${n} のPlus設定を保存しました ✓`;});
+ el("pstClear").addEventListener("click",()=>{const n=el("pstStaff").value;if(!n)return;if(!confirm(n+" のPlus設定を初期化しますか？"))return;const all=loadAll();delete all[n];saveAll(all);writeForm(defaults());el("pstMsg").textContent=n+" の設定を初期化しました";});
+ new MutationObserver(refreshBtn).observe(document.documentElement,{attributes:true,attributeFilter:["data-plan"]});
+ window.addEventListener("load",()=>setTimeout(refreshBtn,100));
+ refreshBtn();
+ window.YUTORU_PLUS_STAFF={key:KEY,load:loadAll};
+})();
+</script>
+
+
 </body></html>
