@@ -2073,7 +2073,7 @@ document.addEventListener("click", function(e){
   </div>
 
   <div class="pstSection"><h3>マスター適用情報</h3>
-   <div class="pstGrid"><label class="pstField">税マスター<input id="pstTaxMaster" value="2026-withholding-v1" readonly></label><label class="pstField">保険マスター<input id="pstInsuranceMaster" value="2026-insurance-v1" readonly></label></div>
+   <div class="pstGrid"><label class="pstField">税マスター<input id="pstTaxMaster" value="2026-withholding-v1" readonly></label><label class="pstField">保険マスター<input id="pstInsuranceMaster" value="2026-insurance-v2" readonly></label></div>
    <p class="pstHint">本番では effective_from / version / source / verified / published をサーバーで保持し、給与確定時に適用バージョンをスナップショット保存します。</p>
   </div>
 
@@ -2112,9 +2112,9 @@ document.addEventListener("click", function(e){
    el("pstMonthlyFields").style.display=monthly?"block":"none";
    el("pstMonthlySalaryField").style.display=monthly?"block":"none";
  }
- function defaults(){return {payType:"hourly",monthlySalary:0,monthlyHours:0,fixedOtAmount:0,fixedOtHours:0,monthlyAllowance:0,dob:"",taxClass:"kou",dependents:0,employment:false,employmentCategory:"general",pension:false,pensionMonthly:0,healthMode:"none",kyokaiBranch:"東京",healthMonthly:0,fixedLabel:"",fixedAmount:0,careMode:"auto",taxMaster:"2026-withholding-v1",insuranceMaster:"2026-insurance-v1",updatedAt:null}}
+ function defaults(){return {payType:"hourly",monthlySalary:0,monthlyHours:0,fixedOtAmount:0,fixedOtHours:0,monthlyAllowance:0,dob:"",taxClass:"kou",dependents:0,employment:false,employmentCategory:"general",pension:false,pensionMonthly:0,healthMode:"none",kyokaiBranch:"東京",healthMonthly:0,fixedLabel:"",fixedAmount:0,careMode:"auto",taxMaster:"2026-withholding-v1",insuranceMaster:"2026-insurance-v2",updatedAt:null}}
  function readForm(){return {payType:el("pstPayType").value,monthlySalary:Number(el("pstMonthlySalary").value||0),monthlyHours:Number(el("pstMonthlyHours").value||0),fixedOtAmount:Number(el("pstFixedOtAmount").value||0),fixedOtHours:Number(el("pstFixedOtHours").value||0),monthlyAllowance:Number(el("pstMonthlyAllowance").value||0),dob:el("pstDob").value,taxClass:el("pstTaxClass").value,dependents:Number(el("pstDependents").value||0),employment:el("pstEmployment").checked,employmentCategory:el("pstEmploymentCat").value,pension:el("pstPension").checked,pensionMonthly:Number(el("pstPensionMonthly").value||0),healthMode:el("pstHealthMode").value,kyokaiBranch:el("pstKyokaiBranch").value,healthMonthly:Number(el("pstHealthMonthly").value||0),fixedLabel:el("pstFixedLabel").value.trim(),fixedAmount:Number(el("pstFixedAmount").value||0),careMode:el("pstCareMode").value,taxMaster:el("pstTaxMaster").value,insuranceMaster:el("pstInsuranceMaster").value,updatedAt:new Date().toISOString()}}
- function writeForm(v){v=Object.assign(defaults(),v||{});el("pstPayType").value=v.payType||"hourly";el("pstMonthlySalary").value=v.monthlySalary||"";el("pstMonthlyHours").value=v.monthlyHours||"";el("pstFixedOtAmount").value=v.fixedOtAmount||"";el("pstFixedOtHours").value=v.fixedOtHours||"";el("pstMonthlyAllowance").value=v.monthlyAllowance||"";payTypeToggle();el("pstDob").value=v.dob||"";el("pstTaxClass").value=v.taxClass||"kou";el("pstDependents").value=Number(v.dependents||0);el("pstEmployment").checked=!!v.employment;el("pstEmploymentCat").value=v.employmentCategory||"general";el("pstPension").checked=!!v.pension;el("pstPensionMonthly").value=v.pensionMonthly||"";el("pstHealthMode").value=v.healthMode||"none";el("pstKyokaiBranch").value=v.kyokaiBranch||"東京";el("pstHealthMonthly").value=v.healthMonthly||"";el("pstFixedLabel").value=v.fixedLabel||"";el("pstFixedAmount").value=v.fixedAmount||"";el("pstCareMode").value=v.careMode||"auto";el("pstTaxMaster").value=v.taxMaster||"2026-withholding-v1";el("pstInsuranceMaster").value=v.insuranceMaster||"2026-insurance-v1";healthToggle();el("pstCareStatus").textContent=careText();el("pstMsg").textContent=v.updatedAt?"保存済み設定を読み込みました ✓":""}
+ function writeForm(v){v=Object.assign(defaults(),v||{});el("pstPayType").value=v.payType||"hourly";el("pstMonthlySalary").value=v.monthlySalary||"";el("pstMonthlyHours").value=v.monthlyHours||"";el("pstFixedOtAmount").value=v.fixedOtAmount||"";el("pstFixedOtHours").value=v.fixedOtHours||"";el("pstMonthlyAllowance").value=v.monthlyAllowance||"";payTypeToggle();el("pstDob").value=v.dob||"";el("pstTaxClass").value=v.taxClass||"kou";el("pstDependents").value=Number(v.dependents||0);el("pstEmployment").checked=!!v.employment;el("pstEmploymentCat").value=v.employmentCategory||"general";el("pstPension").checked=!!v.pension;el("pstPensionMonthly").value=v.pensionMonthly||"";el("pstHealthMode").value=v.healthMode||"none";el("pstKyokaiBranch").value=v.kyokaiBranch||"東京";el("pstHealthMonthly").value=v.healthMonthly||"";el("pstFixedLabel").value=v.fixedLabel||"";el("pstFixedAmount").value=v.fixedAmount||"";el("pstCareMode").value=v.careMode||"auto";el("pstTaxMaster").value=v.taxMaster||"2026-withholding-v1";el("pstInsuranceMaster").value=v.insuranceMaster||"2026-insurance-v2";healthToggle();el("pstCareStatus").textContent=careText();el("pstMsg").textContent=v.updatedAt?"保存済み設定を読み込みました ✓":""}
  function fillStaff(){const a=activeStaff();el("pstStaff").innerHTML=a.length?a.map(n=>`<option value="${String(n).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/\"/g,"&quot;")}">${String(n).replace(/&/g,"&amp;").replace(/</g,"&lt;")}</option>`).join(""):'<option value="">スタッフ未登録</option>'}
  function loadSelected(){const n=el("pstStaff").value;writeForm(loadAll()[n]||defaults())}
  function refreshBtn(){el("plusStaffBtn").style.display=isPlus()?"block":"none"}
@@ -2128,6 +2128,317 @@ document.addEventListener("click", function(e){
  window.addEventListener("load",()=>setTimeout(refreshBtn,100));
  refreshBtn();
  window.YUTORU_PLUS_STAFF={key:KEY,load:loadAll};
+})();
+</script>
+
+
+<!-- YUTORU v27: Plus 社員月給・社会保険・源泉税を給与明細へ連動 -->
+<style>
+.y27DeductBox{margin-top:10px;border:1px solid #dbeafe;background:#f8fbff;border-radius:14px;padding:11px}
+.y27DeductBox .y27row{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px solid #e5e7eb;font-size:12px}
+.y27DeductBox .y27row:last-child{border-bottom:0}
+.y27DeductBox .y27net{font-size:16px;font-weight:900;color:#0f766e}
+.y27badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#ecfdf5;color:#047857;font-weight:800;font-size:11px}
+</style>
+
+<script>
+(() => {
+  const originalPrintReport = window.printReport;
+  const originalAllSummary = window.allSummary;
+  const PLUS_KEY = "yutoru_plus_staff_insurance_v26";
+
+  // 2026年度デモマスター。販売本番ではサーバー側のversion/effective_fromで差し替える。
+  const KYOKAI_2026 = {
+    "北海道":10.28,"青森":9.85,"岩手":9.51,"宮城":10.10,"秋田":10.01,"山形":9.75,"福島":9.50,
+    "茨城":9.52,"栃木":9.82,"群馬":9.68,"埼玉":9.67,"千葉":9.73,"東京":9.85,"神奈川":9.92,
+    "新潟":9.21,"富山":9.59,"石川":9.70,"福井":9.71,"山梨":9.55,"長野":9.63,"岐阜":9.80,
+    "静岡":9.61,"愛知":9.93,"三重":9.77,"滋賀":9.88,"京都":9.89,"大阪":10.13,"兵庫":10.12,
+    "奈良":9.91,"和歌山":10.06,"鳥取":9.86,"島根":9.94,"岡山":10.05,"広島":9.78,"山口":10.15,
+    "徳島":10.24,"香川":10.02,"愛媛":9.98,"高知":10.05,"福岡":10.11,"佐賀":10.55,"長崎":10.06,
+    "熊本":10.08,"大分":10.08,"宮崎":9.77,"鹿児島":10.13,"沖縄":9.44
+  };
+  const MASTER_2026 = {
+    version:"2026-insurance-v2",
+    pensionTotal:0.183,
+    careTotal:0.0162,
+    childSupportTotal:0.0023,
+    employmentWorker:{general:0.005,agri:0.006,construction:0.006}
+  };
+
+  function loadPlusAll(){
+    try{return JSON.parse(localStorage.getItem(PLUS_KEY)||"{}")}catch(e){return {}}
+  }
+  function plusSetting(name){
+    const d={payType:"hourly",monthlySalary:0,monthlyHours:0,fixedOtAmount:0,fixedOtHours:0,monthlyAllowance:0,dob:"",taxClass:"kou",dependents:0,employment:false,employmentCategory:"general",pension:false,pensionMonthly:0,healthMode:"none",kyokaiBranch:"東京",healthMonthly:0,fixedLabel:"",fixedAmount:0,careMode:"auto",taxMaster:"2026-withholding-v1",insuranceMaster:"2026-insurance-v2"};
+    return Object.assign(d,loadPlusAll()[name]||{});
+  }
+  function isPlusPlan(){
+    return (window.SALES_TENANT?.plan||document.documentElement.dataset.plan)==="plus";
+  }
+  function ageOn(d, now=new Date()){
+    if(!d)return null;
+    const b=new Date(d+"T00:00:00");
+    if(Number.isNaN(b.getTime()))return null;
+    let a=now.getFullYear()-b.getFullYear();
+    const m=now.getMonth()-b.getMonth();
+    if(m<0||(m===0&&now.getDate()<b.getDate()))a--;
+    return a;
+  }
+  function careEligible(s){
+    if(s.careMode==="on")return true;
+    if(s.careMode==="off")return false;
+    const a=ageOn(s.dob);
+    return a!==null && a>=40 && a<65;
+  }
+
+  // 2026年分 源泉税計算（既存のZUCCA給与ロジックをYUTORUへ移植）
+  function salaryDeduction(A){if(A<=158333)return 54167;if(A<=299999)return Math.ceil(A*.30+6667);if(A<=549999)return Math.ceil(A*.20+36667);if(A<=708330)return Math.ceil(A*.10+91667);return 162500}
+  function basicDeduction(A){if(A<=2120833)return 48334;if(A<=2162499)return 40000;if(A<=2204166)return 26667;if(A<=2245833)return 13334;return 0}
+  function incomeTaxBase(B,withReconstruction){B=Math.max(0,B);let rate=0,ded=0;if(B<=162500){rate=.05}else if(B<=275000){rate=.10;ded=8125}else if(B<=579166){rate=.20;ded=35625}else if(B<=750000){rate=.23;ded=53000}else if(B<=1500000){rate=.33;ded=128000}else if(B<=3333333){rate=.40;ded=233000}else{rate=.45;ded=399666.5}let t=Math.max(0,B*rate-ded);return withReconstruction?t*1.021:t}
+  function round100Tax(n){let r=n%100;return Math.floor(n/100)*100+(r>=50?100:0)}
+  function withholdingTax2026(amount,taxClass,dependents){
+    let A=Math.max(0,Math.floor(amount||0));
+    const tc=taxClass==="otsu"||taxClass==="乙"?"乙":"甲";
+    if(tc==="乙"){
+      if(A<105000)return Math.floor(A*.03063);
+      if(A>740000){if(A<1710000)return Math.floor(259200+(A-740000)*.4084);return Math.floor(655400+(A-1710000)*.45945)}
+      let step=A<=220999?2000:3000,min=A<=220999?105000:221000;
+      let base=A===740000?740000:A-((A-min)%step);
+      function part(mult){let X=base*mult;let B=Math.max(0,X-salaryDeduction(X)-basicDeduction(X));return Math.floor(incomeTaxBase(B,false))}
+      return round100Tax(round100Tax(part(2.5)-part(1.5))*1.021);
+    }
+    let B=Math.max(0,A-salaryDeduction(A)-basicDeduction(A)-31667*Math.max(0,Math.min(7,Number(dependents)||0)));
+    let t=incomeTaxBase(B,true);
+    return Math.max(0,Math.round(t/10)*10);
+  }
+
+  function grossFor(name){
+    const x=JSON.parse(localStorage.getItem(DK)||"{}");
+    const t=staffTotal(x,name);
+    const s=plusSetting(name);
+    const transportPerDay=Number(transports()[name]||0);
+    const transport=(t[0]||0)*transportPerDay;
+    const wage=Number(wages()[name]||0);
+
+    if(s.payType!=="monthly"){
+      const early=staffEarlySummary(x,name,wage);
+      const p=payrollDetail(t,wage,transportPerDay,early.amount);
+      return {
+        payType:"hourly",days:t[0],tot:t,wage,base:p.base,fixedOt:0,overtimePay:p.overtimePremium,
+        nightPay:p.nightPremium,earlyPay:p.earlyAllowance,otherAllowance:0,transport,
+        gross:p.total,early,monthlyHours:0,hourlyEquivalent:wage,actualOtMin:t[3]||0,excessOtMin:t[3]||0
+      };
+    }
+
+    const base=Number(s.monthlySalary||0);
+    const monthlyHours=Number(s.monthlyHours||0);
+    const hourlyEquivalent=monthlyHours>0?base/monthlyHours:0;
+    const actualOtMin=t[3]||0;
+    const coveredMin=Math.max(0,Number(s.fixedOtHours||0))*60;
+    const excessOtMin=Math.max(0,actualOtMin-coveredMin);
+    const fixedOt=Number(s.fixedOtAmount||0);
+    // 月給の所定時間外は基本給に含まれないため、超過分は125%で加算
+    const overtimePay=(excessOtMin/60)*hourlyEquivalent*1.25;
+    // 深夜は所定内/時間外を問わず25%の深夜割増を別加算
+    const nightPay=((t[4]||0)/60)*hourlyEquivalent*0.25;
+    const early=staffEarlySummary(x,name,hourlyEquivalent);
+    const otherAllowance=Number(s.monthlyAllowance||0);
+    const gross=base+fixedOt+overtimePay+nightPay+early.amount+otherAllowance+transport;
+
+    return {
+      payType:"monthly",days:t[0],tot:t,wage,base,fixedOt,overtimePay,nightPay,earlyPay:early.amount,
+      otherAllowance,transport,gross,early,monthlyHours,hourlyEquivalent,actualOtMin,excessOtMin
+    };
+  }
+
+  function deductionsFor(name,g){
+    const s=plusSetting(name);
+    let health=0,care=0,pension=0,employment=0,childSupport=0;
+    let healthRate=null;
+
+    if(s.healthMode==="fixed"){
+      health=Math.max(0,Number(s.fixedAmount||0));
+    }else if(s.healthMode==="kyokai"){
+      const std=Math.max(0,Number(s.healthMonthly||0));
+      healthRate=KYOKAI_2026[s.kyokaiBranch]??null;
+      if(healthRate!=null)health=Math.round(std*(healthRate/100)/2);
+      // 2026年4月分以降の支援金。デモでは本人負担を折半で計算。
+      childSupport=Math.round(std*MASTER_2026.childSupportTotal/2);
+      if(careEligible(s))care=Math.round(std*MASTER_2026.careTotal/2);
+    }
+
+    if(s.pension){
+      const std=Math.max(0,Number(s.pensionMonthly||0));
+      pension=Math.round(std*MASTER_2026.pensionTotal/2);
+    }
+
+    if(s.employment){
+      const r=MASTER_2026.employmentWorker[s.employmentCategory]??MASTER_2026.employmentWorker.general;
+      // 雇用保険はデモ上、交通費を含む支給総額を賃金総額として計算
+      employment=Math.floor(Math.max(0,g.gross)*r);
+    }
+
+    const social=health+care+pension+employment+childSupport;
+    // 所得税は「課税支給額（交通費除外）－社会保険料等控除後」を基礎にする
+    const taxableGross=Math.max(0,g.gross-g.transport);
+    const taxBase=Math.max(0,taxableGross-social);
+    const withholding=withholdingTax2026(taxBase,s.taxClass,s.dependents);
+    const totalDeduction=social+withholding;
+    const net=g.gross-totalDeduction;
+
+    return {health,care,pension,employment,childSupport,social,taxBase,withholding,totalDeduction,net,healthRate,setting:s};
+  }
+
+  function unified(name){
+    const g=grossFor(name);
+    const d=deductionsFor(name,g);
+    return {name,g,d,s:d.setting};
+  }
+
+  function moneyRow(label,value,extraClass=""){
+    return '<tr class="'+extraClass+'"><th>'+safe(label)+'</th><td>'+yen(value)+'</td></tr>';
+  }
+
+  window.printReport=function(name){
+    if(!isPlusPlan()){
+      return typeof originalPrintReport==="function"?originalPrintReport(name):undefined;
+    }
+    const members=staff();
+    const selected=name || Q("staff")?.value || members[0];
+    if(!selected){alert("給与明細を出力するスタッフがいません");return}
+
+    const u=unified(selected), g=u.g, d=u.d, s=u.s;
+    const x=JSON.parse(localStorage.getItem(DK)||"{}");
+    const [st,en]=range();
+    let daily=[], day=new Date(st);
+    while(day<=en){
+      const key=iso(day),rows=x[selected]?.[key]||[];
+      if(rows.length){
+        const c=calc(rows),times={};
+        rows.forEach(v=>{times[v[0]]=v[1]});
+        daily.push('<tr><td>'+safe(key)+'</td><td>'+safe(times["出勤"]||"--")+'</td><td>'+safe(times["退勤"]||"--")+'</td><td>'+fmt(c[0])+'</td><td>'+fmt(c[1])+'</td><td>'+fmt(c[2])+'</td><td>'+fmt(c[3])+'</td></tr>');
+      }
+      day.setDate(day.getDate()+1);
+    }
+
+    const payTypeLabel=g.payType==="monthly"?"月給制（社員）":"時給制";
+    let payRows="";
+    if(g.payType==="monthly"){
+      payRows += moneyRow("基本給（月額）",g.base);
+      if(g.fixedOt)payRows += moneyRow("固定残業代",g.fixedOt);
+      payRows += '<tr><th>残業時間</th><td>'+fmt(g.actualOtMin)+'</td></tr>';
+      if(g.fixedOt)payRows += '<tr><th>固定残業超過時間</th><td>'+fmt(g.excessOtMin)+'</td></tr>';
+      payRows += moneyRow(g.fixedOt?"固定残業超過分":"残業手当",g.overtimePay);
+      payRows += '<tr><th>深夜時間</th><td>'+fmt(g.tot[4])+'</td></tr>';
+      payRows += moneyRow("深夜割増",g.nightPay);
+      payRows += moneyRow("早朝手当",g.earlyPay);
+      if(g.otherAllowance)payRows += moneyRow("その他固定手当",g.otherAllowance);
+      payRows += moneyRow("交通費",g.transport);
+    }else{
+      payRows += moneyRow("基本給（実働×時給）",g.base);
+      payRows += '<tr><th>残業時間</th><td>'+fmt(g.tot[3])+'</td></tr>';
+      payRows += moneyRow("残業割増（+25%）",g.overtimePay);
+      payRows += '<tr><th>深夜時間</th><td>'+fmt(g.tot[4])+'</td></tr>';
+      payRows += moneyRow("深夜割増（+25%）",g.nightPay);
+      payRows += moneyRow("早朝手当",g.earlyPay);
+      payRows += moneyRow("交通費",g.transport);
+    }
+    payRows += moneyRow("支給合計",g.gross,"psTotal");
+    payRows += moneyRow(s.healthMode==="fixed"?(s.fixedLabel||"月額固定型保険"):"健康保険", -d.health);
+    if(d.childSupport)payRows += moneyRow("子ども・子育て支援金", -d.childSupport);
+    if(d.care)payRows += moneyRow("介護保険", -d.care);
+    if(d.pension)payRows += moneyRow("厚生年金", -d.pension);
+    if(d.employment)payRows += moneyRow("雇用保険", -d.employment);
+    payRows += moneyRow("源泉所得税（"+(s.taxClass==="otsu"?"乙":"甲")+(s.taxClass!=="otsu"?"・扶養"+Number(s.dependents||0)+"人":"")+"）", -d.withholding);
+    payRows += moneyRow("控除合計", -d.totalDeduction);
+    payRows += moneyRow("差引支給額", d.net,"psTotal");
+
+    const box=Q("singlePayslipPrint");
+    box.innerHTML=
+      '<div class="psSheet">'+
+      '<div class="psHead"><div><div class="psBrand">YUTORU Plus</div><div class="psTitle">給与明細書</div></div><div>発行日 '+iso(new Date())+'</div></div>'+
+      '<div class="psMeta"><div><b>氏名：</b>'+safe(selected)+'</div><div><b>給与期間：</b>'+iso(st)+' ～ '+iso(en)+'</div><div><b>給与区分：</b>'+payTypeLabel+'</div><div><b>適用マスター：</b>'+safe(s.insuranceMaster||MASTER_2026.version)+'</div></div>'+
+      '<div class="psSummary"><div><small>出勤日数</small><b>'+g.days+'日</b></div>'+
+      '<div><small>'+(g.payType==="monthly"?"基本給":"時給")+'</small><b>'+yen(g.payType==="monthly"?g.base:g.wage)+'</b></div>'+
+      '<div><small>実働</small><b>'+fmt(g.tot[1])+'</b></div><div><small>休憩</small><b>'+fmt(g.tot[2])+'</b></div></div>'+
+      '<table class="psPay"><tbody>'+payRows+'</tbody></table>'+
+      '<div class="psDailyTitle">勤務日別内訳</div>'+
+      '<table class="psDaily"><thead><tr><th>日付</th><th>出勤</th><th>退勤</th><th>実働</th><th>休憩</th><th>残業</th><th>深夜</th></tr></thead><tbody>'+
+      (daily.join("")||'<tr><td colspan="7">勤務データはありません</td></tr>')+
+      '</tbody></table>'+
+      '<div class="psNote">※ YUTORU Plusのデモ計算です。税・保険料率は2026年度マスターを画面確認用に組み込んでいます。本番販売版では中央マスターの適用日・版をサーバーで管理し、給与確定時の版を保存します。</div>'+
+      '</div>';
+
+    const pw=window.open("","_blank");
+    if(!pw){alert("印刷画面を開けませんでした。Safariのポップアップを許可してもう一度お試しください。");return}
+
+    const printCss=`<style>
+      @page{size:A4 portrait;margin:9mm}
+      *{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;color:#111}
+      body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif}
+      .psSheet{max-width:190mm;margin:0 auto;font-size:9.4pt;line-height:1.25}
+      .psHead{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #111;padding-bottom:6px;margin-bottom:8px}
+      .psBrand{font-weight:900;font-size:10pt;letter-spacing:.08em}.psTitle{font-size:18pt;font-weight:900}
+      .psMeta{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;margin-bottom:8px}.psMeta div{border-bottom:1px solid #bbb;padding:3px 2px}
+      .psSummary{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #bbb;border-radius:7px;overflow:hidden;margin-bottom:8px}
+      .psSummary div{padding:6px 5px;text-align:center;border-right:1px solid #ddd}.psSummary div:last-child{border-right:0}.psSummary small{display:block;color:#555}
+      .psPay{width:100%;border-collapse:collapse;margin-bottom:8px}.psPay th,.psPay td{border:1px solid #bbb;padding:4px 7px}.psPay th{text-align:left;background:#f3f4f6}.psPay td{text-align:right;font-weight:700}
+      .psPay .psTotal th,.psPay .psTotal td{font-size:11pt;border-top:2px solid #111}
+      .psDailyTitle{font-weight:900;margin:6px 0 3px}.psDaily{width:100%;border-collapse:collapse;font-size:8.3pt}.psDaily th,.psDaily td{border:1px solid #ccc;padding:3px 4px;text-align:center}.psDaily th{background:#f3f4f6}
+      .psNote{font-size:7.3pt;color:#555;margin-top:6px}
+      @media print{html,body{width:210mm}.psSheet{page-break-inside:avoid}}
+    </style>`;
+
+    pw.document.open();
+    pw.document.write('<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+safe(selected)+' 給与明細</title>'+printCss+'</head><body>'+box.innerHTML+'</body></html>');
+    pw.document.close();
+    setTimeout(()=>{try{pw.focus();pw.print()}catch(e){}},500);
+  };
+
+  window.allSummary=function(){
+    if(!isPlusPlan()){
+      return typeof originalAllSummary==="function"?originalAllSummary():undefined;
+    }
+    const x=JSON.parse(localStorage.getItem(DK)||"{}");
+    const members=staff();
+    let cards=[],rows=[],grandGross=0,grandNet=0,sumBase=0,sumOt=0,sumNight=0,sumTransport=0;
+    members.forEach(name=>{
+      const u=unified(name),g=u.g,d=u.d,s=u.s;
+      grandGross+=g.gross;grandNet+=d.net;sumBase+=g.base;sumOt+=g.overtimePay;sumNight+=g.nightPay;sumTransport+=g.transport;
+      rows.push('<tr><td>'+safe(name)+'</td><td>'+g.days+'</td><td>'+(g.payType==="monthly"?"月給":"時給")+'</td><td>'+fmt(g.tot[1])+'</td><td>'+fmt(g.tot[2])+'</td><td>'+fmt(g.tot[3])+'</td><td>'+yen(g.overtimePay)+'</td><td>'+fmt(g.tot[4])+'</td><td>'+yen(g.nightPay)+'</td><td>'+yen(d.net)+'</td></tr>');
+      cards.push(
+        '<div class="staffPayCard">'+
+        '<div class="staffPayHead"><div class="staffIdentity"><div class="staffAvatar">'+safe(name).charAt(0)+'</div><div><div class="staffPayName">'+safe(name)+'</div><span class="staffDays">'+(g.payType==="monthly"?"月給制":"時給制")+' ・ 出勤 '+g.days+'日</span></div></div>'+
+        '<div class="staffPayTotal"><small>差引支給額</small>'+yen(d.net)+'</div></div>'+
+        '<div class="staffStats"><div class="statCell"><small>'+(g.payType==="monthly"?"基本給":"時給")+'</small><b>'+yen(g.payType==="monthly"?g.base:g.wage)+'</b></div>'+
+        '<div class="statCell"><small>実働</small><b>'+fmt(g.tot[1])+'</b></div><div class="statCell"><small>残業</small><b>'+fmt(g.tot[3])+'</b></div><div class="statCell"><small>深夜</small><b>'+fmt(g.tot[4])+'</b></div></div>'+
+        '<div class="y27DeductBox"><div class="y27row"><span>支給合計</span><b>'+yen(g.gross)+'</b></div><div class="y27row"><span>社会保険等</span><b>▲'+yen(d.social)+'</b></div><div class="y27row"><span>源泉所得税</span><b>▲'+yen(d.withholding)+'</b></div><div class="y27row y27net"><span>差引支給額</span><b>'+yen(d.net)+'</b></div></div>'+
+        '<div class="no-print" style="margin-top:12px"><button type="button" class="admin staffPayslipBtn" style="width:100%" data-staff-name="'+escAttr(name)+'">このスタッフの給与明細をPDF/印刷</button></div>'+
+        '</div>'
+      );
+    });
+    if(Q("allmonthly"))Q("allmonthly").innerHTML=rows.join("");
+    if(Q("allmonthlyCards"))Q("allmonthlyCards").innerHTML=cards.join("");
+    if(Q("printBody"))Q("printBody").innerHTML=rows.join("");
+    if(Q("printPayrollTotal"))Q("printPayrollTotal").textContent=yen(grandNet);
+    if(Q("staffCount"))Q("staffCount").textContent=members.length+"名";
+    if(Q("sumBase"))Q("sumBase").textContent=yen(sumBase);
+    if(Q("sumOt"))Q("sumOt").textContent=yen(sumOt);
+    if(Q("sumNight"))Q("sumNight").textContent=yen(sumNight);
+    if(Q("sumTransport"))Q("sumTransport").textContent=yen(sumTransport);
+    if(Q("sumTotal"))Q("sumTotal").textContent=yen(grandNet);
+    if(typeof renderTransportRows==="function")renderTransportRows();
+    const r=range();if(Q("printPeriod"))Q("printPeriod").textContent=iso(r[0])+" ～ "+iso(r[1]);
+  };
+
+  // Plus設定保存後は一覧も即再計算
+  window.addEventListener("load",()=>{
+    const save=document.getElementById("pstSave");
+    if(save)save.addEventListener("click",()=>setTimeout(()=>{try{allSummary()}catch(e){}},50));
+    try{allSummary()}catch(e){}
+  });
+
+  window.YUTORU_PAYROLL_PLUS={unified,withholdingTax2026,KYOKAI_2026,MASTER_2026};
 })();
 </script>
 
