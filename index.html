@@ -168,6 +168,45 @@ body[data-device-role="punch"] #punchTerminalBadge{
   margin:10px 14px 8px !important;
 }
 </style>
+
+<style>
+.singlePayslipPrint{display:none}
+@media print{
+  @page{size:A4 portrait;margin:10mm}
+  body.print-payslip *{visibility:hidden!important}
+  body.print-payslip #singlePayslipPrint,
+  body.print-payslip #singlePayslipPrint *{visibility:visible!important}
+  body.print-payslip #singlePayslipPrint{
+    display:block!important;
+    position:absolute;
+    left:0;top:0;width:100%;
+    margin:0;padding:0;
+    color:#111;background:#fff;
+    font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+  }
+  .psSheet{max-width:190mm;margin:0 auto;font-size:10.5pt;line-height:1.35}
+  .psHead{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #111;padding-bottom:7px;margin-bottom:10px}
+  .psBrand{font-weight:900;font-size:11pt;letter-spacing:.08em}
+  .psTitle{font-size:20pt;font-weight:900}
+  .psMeta{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;margin-bottom:10px}
+  .psMeta div{border-bottom:1px solid #bbb;padding:4px 2px}
+  .psSummary{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #bbb;border-radius:8px;overflow:hidden;margin-bottom:10px}
+  .psSummary div{padding:7px 6px;text-align:center;border-right:1px solid #ddd}
+  .psSummary div:last-child{border-right:0}
+  .psSummary small{display:block;color:#555;margin-bottom:2px}
+  .psPay{width:100%;border-collapse:collapse;margin-bottom:10px}
+  .psPay th,.psPay td{border:1px solid #bbb;padding:6px 8px}
+  .psPay th{text-align:left;background:#f3f4f6}
+  .psPay td{text-align:right;font-weight:700}
+  .psPay .psTotal th,.psPay .psTotal td{font-size:13pt;border-top:2px solid #111}
+  .psDailyTitle{font-weight:900;margin:8px 0 4px}
+  .psDaily{width:100%;border-collapse:collapse;font-size:9pt}
+  .psDaily th,.psDaily td{border:1px solid #ccc;padding:4px 5px;text-align:center}
+  .psDaily th{background:#f3f4f6}
+  .psNote{font-size:8pt;color:#555;margin-top:7px}
+}
+</style>
+
 </head><body>
 <style>
 #yutoruPlanBar{
@@ -243,8 +282,12 @@ body[data-device-role="punch"] #punchTerminalBadge{display:block}
   </div>
 </div>
 <div id="allmonthlyCards" class="summaryCards"></div><div class="tw closingTable"><table><thead><tr><th>スタッフ</th><th>出勤日数</th><th>時給</th><th>実働</th><th>休憩</th><th>残業</th><th>残業割増</th><th>深夜</th><th>深夜割増</th><th>早朝手当</th><th>給与目安</th></tr></thead><tbody id="allmonthly"></tbody></table></div><div class="row actions"><button onclick="csv()">CSV出力</button><button onclick="printReport()">PDF/印刷</button></div></div></div>
+
+<div id="singlePayslipPrint" class="singlePayslipPrint" aria-hidden="true"></div>
 <div id="printAll" class="c hide"><h2>全スタッフ 月間勤怠・給与集計</h2><p id="printPeriod"></p><div class="tw"><table><thead><tr><th>スタッフ</th><th>出勤日数</th><th>時給</th><th>実働</th><th>休憩</th><th>残業</th><th>残業割増</th><th>深夜</th><th>深夜割増</th><th>早朝手当</th><th>給与目安</th></tr></thead><tbody id="printBody"></tbody><tfoot><tr class="total"><td colspan="10">人件費合計</td><td id="printPayrollTotal">¥0</td></tr></tfoot></table></div></div>
 </div><script>
+// YUTORU v21 single-page payslip print
+
 // ZUCCA Attendance v44 rename persistence fix
 // ZUCCA Attendance v41 original ZUCCA duplicate staff cleanup
 // ZUCCA Attendance v41 duplicate fullname repair
@@ -730,6 +773,7 @@ function allSummary(){
           '<div class="premiumItem pTransport"><small>交通費（'+t[0]+'日 × '+yen(p.transportPerDay)+'）</small><b>'+yen(p.transport)+'</b></div>'+
         '</div>'+
         '<div class="payBreak">計算式：基本分 '+yen(p.base)+' ＋ 残業割増 '+yen(p.overtimePremium)+' ＋ 深夜割増 '+yen(p.nightPremium)+' ＋ 早朝手当 '+yen(p.earlyAllowance)+' ＋ 交通費 '+yen(p.transport)+' ＝ <b>支給額（交通費込み） '+yen(p.total)+'</b></div>'+
+        '<div class="no-print" style="margin-top:12px"><button type="button" class="admin" style="width:100%" onclick="printReport('+JSON.stringify(name)+')">このスタッフの給与明細をPDF/印刷</button></div>'+
       '</div>'
     );
   });
@@ -857,7 +901,72 @@ async function renameStaff(oldn){
 }
 function rl(){const box=Q('list');box.replaceChildren();staff().forEach(n=>{const row=document.createElement('div');row.className='sr';const sp=document.createElement('span');sp.textContent=n;const edit=document.createElement('button');edit.className='admin';edit.textContent='名前変更';edit.onclick=()=>renameStaff(n);const b=document.createElement('button');b.className='del';b.textContent='削除';b.onclick=()=>del(n);row.append(sp,edit,b);box.appendChild(row)})}
 function csv(){let x=JSON.parse(localStorage.getItem(DK)||'{}'),w=wages(),tr=transports(),r=range(),lines=['スタッフ,期間,出勤日数,時給,実働,休憩,残業,残業割増額,深夜,深夜割増額,交通費,支給額'];staff().forEach(s=>{let t=staffTotal(x,s),rate=Number(w[s]||0),p=payrollDetail(t,rate,Number(tr[s]||0));lines.push('"'+s.replace(/"/g,'""')+'","'+iso(r[0])+'～'+iso(r[1])+'",'+t[0]+','+rate+','+fmt(t[1])+','+fmt(t[2])+','+fmt(t[3])+','+Math.round(p.overtimePremium)+','+fmt(t[4])+','+Math.round(p.nightPremium)+','+Math.round(p.transport)+','+Math.round(p.total))});let blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='かんたん勤怠管理給与_'+iso(r[0])+'_'+iso(r[1])+'.csv';a.click();URL.revokeObjectURL(a.href)}
-function printReport(){Q('printAll').classList.remove('hide');window.print();setTimeout(()=>Q('printAll').classList.add('hide'),500)}
+function printReport(name){
+  const members=staff();
+  const selected=name || Q('staff')?.value || (members.includes('デモ太郎')?'デモ太郎':members[0]);
+  if(!selected){alert('給与明細を出力するスタッフがいません');return}
+
+  const x=JSON.parse(localStorage.getItem(DK)||'{}');
+  const rate=Number(wages()[selected]||0);
+  const t=staffTotal(x,selected);
+  const early=staffEarlySummary(x,selected,rate);
+  const p=payrollDetail(t,rate,Number(transports()[selected]||0),early.amount);
+  const [st,en]=range();
+
+  let daily=[], d=new Date(st);
+  while(d<=en){
+    const key=iso(d), rows=x[selected]?.[key]||[];
+    if(rows.length){
+      const c=calc(rows);
+      const times={};
+      rows.forEach(v=>{times[v[0]]=v[1]});
+      daily.push(
+        '<tr><td>'+safe(key)+'</td>'+
+        '<td>'+safe(times['出勤']||'--')+'</td>'+
+        '<td>'+safe(times['退勤']||'--')+'</td>'+
+        '<td>'+fmt(c[0])+'</td>'+
+        '<td>'+fmt(c[1])+'</td>'+
+        '<td>'+fmt(c[2])+'</td>'+
+        '<td>'+fmt(c[3])+'</td></tr>'
+      );
+    }
+    d.setDate(d.getDate()+1);
+  }
+
+  const box=Q('singlePayslipPrint');
+  box.innerHTML=
+    '<div class="psSheet">'+
+      '<div class="psHead"><div><div class="psBrand">YUTORU</div><div class="psTitle">給与明細書</div></div><div>発行日 '+iso(new Date())+'</div></div>'+
+      '<div class="psMeta"><div><b>氏名：</b>'+safe(selected)+'</div><div><b>給与期間：</b>'+iso(st)+' ～ '+iso(en)+'</div></div>'+
+      '<div class="psSummary">'+
+        '<div><small>出勤日数</small><b>'+t[0]+'日</b></div>'+
+        '<div><small>時給</small><b>'+yen(rate)+'</b></div>'+
+        '<div><small>実働</small><b>'+fmt(t[1])+'</b></div>'+
+        '<div><small>休憩</small><b>'+fmt(t[2])+'</b></div>'+
+      '</div>'+
+      '<table class="psPay"><tbody>'+
+        '<tr><th>基本給（実働×時給）</th><td>'+yen(p.base)+'</td><th>残業時間</th><td>'+fmt(t[3])+'</td></tr>'+
+        '<tr><th>残業割増（+25%）</th><td>'+yen(p.overtimePremium)+'</td><th>深夜時間</th><td>'+fmt(t[4])+'</td></tr>'+
+        '<tr><th>深夜割増（+25%）</th><td>'+yen(p.nightPremium)+'</td><th>早朝対象</th><td>'+fmt(early.minutes)+'</td></tr>'+
+        '<tr><th>早朝手当</th><td>'+yen(p.earlyAllowance)+'</td><th>交通費（'+t[0]+'日 × '+yen(p.transportPerDay)+'）</th><td>'+yen(p.transport)+'</td></tr>'+
+        '<tr class="psTotal"><th colspan="3">支給合計（交通費込み）</th><td>'+yen(p.total)+'</td></tr>'+
+      '</tbody></table>'+
+      '<div class="psDailyTitle">勤務日別内訳</div>'+
+      '<table class="psDaily"><thead><tr><th>日付</th><th>出勤</th><th>退勤</th><th>実働</th><th>休憩</th><th>残業</th><th>深夜</th></tr></thead>'+
+      '<tbody>'+(daily.join('')||'<tr><td colspan="7">勤務データはありません</td></tr>')+'</tbody></table>'+
+      '<div class="psNote">※ YUTORUに登録された勤怠・給与設定をもとに作成した給与明細です。</div>'+
+    '</div>';
+
+  box.setAttribute('aria-hidden','false');
+  document.body.classList.add('print-payslip');
+  const cleanup=()=>{
+    document.body.classList.remove('print-payslip');
+    box.setAttribute('aria-hidden','true');
+  };
+  window.addEventListener('afterprint',cleanup,{once:true});
+  window.print();
+  setTimeout(cleanup,1500);
+}
 function init(){
   const st=Q('staff');
   if(st){
