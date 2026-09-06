@@ -1007,7 +1007,7 @@ function printReport(name){
   pw.document.write(
     '<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
     '<title>'+safe(selected)+' 給与明細</title>' + printCss +
-    '</head><body><div class="singlePayslipPrint">' + box.innerHTML + '</div><!-- YUTORU v30 payroll finalization integrated -->\n</body></html>'
+    '</head><body><div class="singlePayslipPrint">' + box.innerHTML + '</div><!-- YUTORU v31 Safari finalize fix -->\n</body></html>'
   );
   pw.document.close();
 
@@ -2438,15 +2438,37 @@ document.addEventListener("click", function(e){
       @media print{html,body{width:210mm}.psSheet{page-break-inside:avoid}.psActions{display:none!important}}
     </style>`;
 
+    // iPhone Safariではabout:blank側のlocalStorage書き込みが不安定なため、
+    // 保存処理は元のYUTORU画面（opener）側で実行する。
+    const SNAP_KEY_V31="yutoru_payroll_snapshots_v31";
+    window.YUTORU_V31_FINALIZE=function(snap){
+      try{
+        let a=[];
+        try{a=JSON.parse(localStorage.getItem(SNAP_KEY_V31)||"[]")}catch(e){a=[]}
+        snap.finalized_at=new Date().toISOString();
+        const i=a.findIndex(v=>v.id===snap.id);
+        if(i>=0)a[i]=snap;else a.push(snap);
+        localStorage.setItem(SNAP_KEY_V31,JSON.stringify(a));
+        return {ok:true,finalized_at:snap.finalized_at};
+      }catch(e){
+        return {ok:false,error:String(e&&e.message||e)};
+      }
+    };
+
     const snapJson=JSON.stringify(snapshot).replace(/</g,"\\u003c");
-    const actionHtml='<div class="psActions"><button id="v30Finalize" class="psFinalize" type="button">✓ 給与を確定</button><button id="v30Print" class="psPrint" type="button">PDF / 印刷</button></div>';
+    const actionHtml='<div class="psActions"><button id="v31Finalize" class="psFinalize" type="button">✓ 給与を確定</button><button id="v31Print" class="psPrint" type="button">PDF / 印刷</button></div>';
     const actionJs='<script>(function(){'+
-      'const SNAP_KEY="yutoru_payroll_snapshots_v30";'+
       'const snap='+snapJson+';'+
-      'const f=document.getElementById("v30Finalize");'+
-      'function list(){try{return JSON.parse(localStorage.getItem(SNAP_KEY)||"[]")}catch(e){return []}}'+
-      'f.addEventListener("click",function(){let a=list();snap.finalized_at=new Date().toISOString();const i=a.findIndex(v=>v.id===snap.id);if(i>=0)a[i]=snap;else a.push(snap);localStorage.setItem(SNAP_KEY,JSON.stringify(a));f.textContent="✓ 確定済み";f.classList.add("psSaved");});'+
-      'document.getElementById("v30Print").addEventListener("click",function(){window.print()});'+
+      'const f=document.getElementById("v31Finalize");'+
+      'f.addEventListener("click",function(){'+
+        'try{'+
+          'if(!window.opener||typeof window.opener.YUTORU_V31_FINALIZE!=="function"){throw new Error("元画面との接続がありません");}'+
+          'const r=window.opener.YUTORU_V31_FINALIZE(snap);'+
+          'if(!r||!r.ok){throw new Error((r&&r.error)||"保存できませんでした");}'+
+          'f.textContent="✓ 確定済み";f.classList.add("psSaved");f.disabled=true;'+
+        '}catch(e){alert("給与確定の保存に失敗しました。\\n"+(e&&e.message?e.message:e));}'+
+      '});'+
+      'document.getElementById("v31Print").addEventListener("click",function(){window.print()});'+
       '})();<\\/script>';
 
     pw.document.open();
