@@ -1007,7 +1007,7 @@ function printReport(name){
   pw.document.write(
     '<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
     '<title>'+safe(selected)+' 給与明細</title>' + printCss +
-    '</head><body><div class="singlePayslipPrint">' + box.innerHTML + '</div><!-- YUTORU v32 iPhone finalize direct binding -->\n</body></html>'
+    '</head><body><div class="singlePayslipPrint">' + box.innerHTML + '</div><!-- YUTORU v33 payroll history list -->\n</body></html>'
   );
   pw.document.close();
 
@@ -2535,5 +2535,145 @@ document.addEventListener("click", function(e){
 </script>
 
 
+
+
+<style>
+#v33HistoryPanel{
+  position:fixed;inset:0;z-index:12000;background:#fff;display:none;overflow:auto;
+  -webkit-overflow-scrolling:touch;
+}
+#v33HistoryPanel.show{display:block}
+#v33HistoryHeader{
+  position:sticky;top:0;z-index:2;background:#fff;border-bottom:1px solid #e5e7eb;
+  padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px
+}
+#v33HistoryHeader h2{margin:0;font-size:20px}
+#v33HistoryClose{border:0;background:#f3f4f6;border-radius:999px;padding:10px 14px;font-weight:800}
+#v33HistoryBody{padding:14px}
+.v33HistoryCard{
+  border:1px solid #e5e7eb;border-radius:16px;padding:14px;margin-bottom:12px;background:#fff;
+  box-shadow:0 2px 8px #0000000a
+}
+.v33HistoryTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.v33HistoryName{font-weight:900;font-size:17px}
+.v33HistoryPeriod{font-size:13px;color:#64748b;margin-top:4px}
+.v33HistoryNet{font-size:22px;font-weight:900;white-space:nowrap}
+.v33HistoryMeta{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.v33Badge{font-size:12px;font-weight:800;border-radius:999px;padding:6px 9px;background:#ecfdf5;color:#166534}
+.v33Badge.gray{background:#f1f5f9;color:#475569}
+.v33HistoryActions{display:flex;gap:8px;margin-top:12px}
+.v33HistoryActions button{flex:1;border:0;border-radius:12px;padding:10px;font-weight:900}
+.v33OpenBtn{background:#0f766e;color:#fff}
+.v33DeleteBtn{background:#fee2e2;color:#991b1b}
+#v33HistoryEmpty{text-align:center;color:#64748b;padding:40px 16px}
+#v33HistoryFloating{
+  position:fixed;right:16px;bottom:78px;z-index:9000;border:0;border-radius:999px;
+  padding:12px 16px;background:#0f172a;color:#fff;font-weight:900;box-shadow:0 8px 24px #0002
+}
+@media print{#v33HistoryFloating,#v33HistoryPanel{display:none!important}}
+</style>
+
+<button id="v33HistoryFloating" type="button">給与履歴</button>
+<section id="v33HistoryPanel" aria-hidden="true">
+  <div id="v33HistoryHeader">
+    <div>
+      <h2>給与履歴</h2>
+      <div style="font-size:12px;color:#64748b;margin-top:3px">確定済みの給与を端末内に保存</div>
+    </div>
+    <button id="v33HistoryClose" type="button">閉じる</button>
+  </div>
+  <div id="v33HistoryBody"></div>
+</section>
+
+<script>
+(()=>{
+  const SNAP_KEY="yutoru_payroll_snapshots_v31";
+
+  function yen(v){return "¥"+Number(v||0).toLocaleString("ja-JP")}
+  function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+  function list(){
+    try{
+      const a=JSON.parse(localStorage.getItem(SNAP_KEY)||"[]");
+      return Array.isArray(a)?a:[];
+    }catch(e){return []}
+  }
+  function save(a){localStorage.setItem(SNAP_KEY,JSON.stringify(a))}
+  function fmtPeriod(x){
+    if(x.period_start&&x.period_end)return x.period_start+" ～ "+x.period_end;
+    if(x.period)return String(x.period).replace("_"," ～ ");
+    return "";
+  }
+  function openHistory(){
+    render();
+    const p=document.getElementById("v33HistoryPanel");
+    p.classList.add("show"); p.setAttribute("aria-hidden","false");
+  }
+  function closeHistory(){
+    const p=document.getElementById("v33HistoryPanel");
+    p.classList.remove("show"); p.setAttribute("aria-hidden","true");
+  }
+  function render(){
+    const body=document.getElementById("v33HistoryBody");
+    const a=list().slice().sort((x,y)=>String(y.finalized_at||"").localeCompare(String(x.finalized_at||"")));
+    if(!a.length){
+      body.innerHTML='<div id="v33HistoryEmpty">まだ確定済みの給与はありません。</div>';
+      return;
+    }
+    body.innerHTML=a.map((x,i)=>{
+      const when=x.finalized_at?new Date(x.finalized_at).toLocaleString("ja-JP"):"";
+      return '<div class="v33HistoryCard" data-id="'+esc(x.id)+'">'+
+        '<div class="v33HistoryTop">'+
+          '<div><div class="v33HistoryName">'+esc(x.staff_name)+'</div>'+
+          '<div class="v33HistoryPeriod">'+esc(fmtPeriod(x))+'</div></div>'+
+          '<div class="v33HistoryNet">'+yen(x.net_pay)+'</div>'+
+        '</div>'+
+        '<div class="v33HistoryMeta">'+
+          '<span class="v33Badge">確定済み</span>'+
+          '<span class="v33Badge gray">'+esc(x.pay_type==="monthly"?"月給制":"時給制")+'</span>'+
+          '<span class="v33Badge gray">'+esc(x.insurance_master_version||"")+'</span>'+
+        '</div>'+
+        '<div style="font-size:12px;color:#64748b;margin-top:8px">支給 '+yen(x.gross)+' / 控除 '+yen(x.total_deduction)+'</div>'+
+        '<div style="font-size:11px;color:#94a3b8;margin-top:5px">確定 '+esc(when)+'</div>'+
+        '<div class="v33HistoryActions">'+
+          '<button class="v33OpenBtn" type="button" data-open="'+esc(x.id)+'">内容を見る</button>'+
+          '<button class="v33DeleteBtn" type="button" data-del="'+esc(x.id)+'">削除</button>'+
+        '</div>'+
+      '</div>';
+    }).join("");
+
+    body.querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click",()=>showDetail(b.getAttribute("data-open"))));
+    body.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click",()=>removeOne(b.getAttribute("data-del"))));
+  }
+  function removeOne(id){
+    if(!confirm("この給与履歴を削除しますか？"))return;
+    const a=list().filter(x=>x.id!==id); save(a); render();
+  }
+  function showDetail(id){
+    const x=list().find(v=>v.id===id); if(!x)return;
+    const c=x.calculation||{};
+    const rows=[
+      ["支給合計",x.gross],["社会保険",x.social_insurance],["源泉所得税",x.withholding_tax],
+      ["控除合計",x.total_deduction],["差引支給額",x.net_pay],
+      ["基本給",c.base],["残業手当",c.overtime],["深夜割増",c.night],["早朝手当",c.early],
+      ["固定残業代",c.fixed_ot],["その他固定手当",c.other_allowance],["交通費",c.transport],
+      ["健康保険",c.health],["子ども・子育て支援金",c.child_support],["介護保険",c.care],
+      ["厚生年金",c.pension],["雇用保険",c.employment]
+    ];
+    const w=window.open("","_blank");
+    if(!w){alert("詳細画面を開けませんでした。");return}
+    const html='<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'+
+      '<title>'+esc(x.staff_name)+' 給与履歴</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;margin:0;padding:18px;color:#111}h1{font-size:24px;margin:0 0 6px}.meta{color:#64748b;font-size:13px;margin-bottom:18px}.box{border:1px solid #ddd;border-radius:14px;overflow:hidden}.row{display:flex;justify-content:space-between;padding:11px 13px;border-bottom:1px solid #eee}.row:last-child{border-bottom:0}.strong{font-weight:900;font-size:18px}.badge{display:inline-block;padding:5px 8px;border-radius:999px;background:#ecfdf5;color:#166534;font-weight:800;font-size:12px;margin:4px 4px 10px 0}</style></head><body>'+
+      '<h1>'+esc(x.staff_name)+'</h1><div class="meta">'+esc(fmtPeriod(x))+'</div>'+
+      '<span class="badge">確定済み</span><span class="badge">'+esc(x.insurance_master_version||"")+'</span>'+
+      '<div class="box">'+rows.filter(r=>r[1]!==undefined&&r[1]!==null).map((r,idx)=>'<div class="row'+(r[0]==="差引支給額"?' strong':'')+'"><span>'+esc(r[0])+'</span><span>'+yen(r[1])+'</span></div>').join("")+'</div>'+
+      '</body></html>';
+    w.document.open();w.document.write(html);w.document.close();
+  }
+
+  document.getElementById("v33HistoryFloating")?.addEventListener("click",openHistory);
+  document.getElementById("v33HistoryClose")?.addEventListener("click",closeHistory);
+  window.YUTORU_V33_HISTORY={open:openHistory,render,list};
+})();
+</script>
 
 </body></html>
