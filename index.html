@@ -1007,7 +1007,7 @@ function printReport(name){
   pw.document.write(
     '<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
     '<title>'+safe(selected)+' 給与明細</title>' + printCss +
-    '</head><body><div class="singlePayslipPrint">' + box.innerHTML + '</div><!-- YUTORU v33 payroll history list -->\n</body></html>'
+    '</head><body><div class="singlePayslipPrint">' + box.innerHTML + '</div><!-- YUTORU v34 manage menu + backup -->\n</body></html>'
   );
   pw.document.close();
 
@@ -2673,6 +2673,88 @@ document.addEventListener("click", function(e){
   document.getElementById("v33HistoryFloating")?.addEventListener("click",openHistory);
   document.getElementById("v33HistoryClose")?.addEventListener("click",closeHistory);
   window.YUTORU_V33_HISTORY={open:openHistory,render,list};
+})();
+</script>
+
+
+<style>
+/* v34 管理メニュー + バックアップ */
+#v34ManageBtn{position:fixed;right:16px;bottom:16px;z-index:11000;border:0;border-radius:999px;padding:13px 18px;background:#0f172a;color:#fff;font-weight:900;box-shadow:0 8px 24px #0003}
+#v34Sheet{position:fixed;inset:0;z-index:13000;display:none;background:#0006;align-items:flex-end;justify-content:center}
+#v34Sheet.show{display:flex}
+#v34Card{width:min(100%,560px);background:#fff;border-radius:24px 24px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -12px 30px #0002}
+#v34Head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}#v34Head h3{margin:0}
+#v34Close{border:0;background:#f1f5f9;border-radius:999px;padding:9px 13px;font-weight:900}
+.v34Grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.v34Btn{border:0;border-radius:16px;padding:15px 10px;font-weight:900;font-size:14px;background:#f1f5f9;color:#0f172a}
+.v34Btn.teal{background:#0f766e;color:#fff}.v34Btn.dark{background:#0f172a;color:#fff}.v34Btn.wide{grid-column:1/-1}
+#v33HistoryFloating{display:none!important}
+#v34RestoreInput{display:none}
+@media print{#v34ManageBtn,#v34Sheet{display:none!important}}
+</style>
+
+<button id="v34ManageBtn" type="button">管理</button>
+<div id="v34Sheet" aria-hidden="true"><div id="v34Card">
+ <div id="v34Head"><h3>管理メニュー</h3><button id="v34Close" type="button">閉じる</button></div>
+ <div class="v34Grid">
+  <button id="v34History" class="v34Btn teal" type="button">給与履歴</button>
+  <button id="v34Insurance" class="v34Btn" type="button">Plusスタッフ保険</button>
+  <button id="v34Plus" class="v34Btn" type="button">＋Plus</button>
+  <button id="v34Setup" class="v34Btn" type="button">初期設定</button>
+  <button id="v34Backup" class="v34Btn dark" type="button">バックアップ保存</button>
+  <button id="v34Restore" class="v34Btn dark" type="button">バックアップ復元</button>
+ </div>
+ <input id="v34RestoreInput" type="file" accept="application/json,.json">
+ <div style="font-size:11px;color:#64748b;margin-top:12px;line-height:1.5">バックアップはJSONファイルとして保存します。iPhoneでは共有/ファイル保存からiCloud Driveにも保管できます。</div>
+</div></div>
+
+<script>
+(()=>{
+ const sh=document.getElementById("v34Sheet");
+ const close=()=>{sh.classList.remove("show");sh.setAttribute("aria-hidden","true")};
+ document.getElementById("v34ManageBtn").onclick=()=>{sh.classList.add("show");sh.setAttribute("aria-hidden","false")};
+ document.getElementById("v34Close").onclick=close;
+ sh.addEventListener("click",e=>{if(e.target===sh)close()});
+
+ function clickByText(words){
+   const els=[...document.querySelectorAll("button,a")].filter(e=>!e.id.startsWith("v34"));
+   const el=els.find(e=>words.some(w=>(e.textContent||"").includes(w)));
+   if(el){close();el.click();return true} return false;
+ }
+ document.getElementById("v34History").onclick=()=>{close();window.YUTORU_V33_HISTORY?.open()};
+ document.getElementById("v34Insurance").onclick=()=>clickByText(["Plus スタッフ保険","Plusスタッフ保険"]);
+ document.getElementById("v34Plus").onclick=()=>clickByText(["＋ Plus","＋Plus","+ Plus","+Plus"]);
+ document.getElementById("v34Setup").onclick=()=>clickByText(["初期設定"]);
+
+ // Backup all YUTORU-owned local data. No credentials/secrets are added.
+ document.getElementById("v34Backup").onclick=()=>{
+   const data={format:"YUTORU-backup",version:1,created_at:new Date().toISOString(),origin:location.origin,data:{}};
+   for(let i=0;i<localStorage.length;i++){
+     const k=localStorage.key(i);
+     if(k && /^(yutoru_|YUTORU_)/i.test(k)) data.data[k]=localStorage.getItem(k);
+   }
+   const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+   const a=document.createElement("a");
+   a.href=URL.createObjectURL(blob);
+   const d=new Date(),pad=n=>String(n).padStart(2,"0");
+   a.download=`YUTORU_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;
+   document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+   close();
+ };
+ const inp=document.getElementById("v34RestoreInput");
+ document.getElementById("v34Restore").onclick=()=>inp.click();
+ inp.addEventListener("change",async()=>{
+   const f=inp.files?.[0]; if(!f)return;
+   try{
+     const obj=JSON.parse(await f.text());
+     if(obj?.format!=="YUTORU-backup"||!obj.data||typeof obj.data!=="object")throw new Error("YUTORUのバックアップファイルではありません");
+     if(!confirm("現在の端末データにバックアップ内容を復元します。よろしいですか？"))return;
+     Object.entries(obj.data).forEach(([k,v])=>{if(/^(yutoru_|YUTORU_)/i.test(k))localStorage.setItem(k,String(v))});
+     alert("バックアップを復元しました。画面を再読み込みします。");
+     location.reload();
+   }catch(e){alert("復元できませんでした。\\n"+e.message)}
+   finally{inp.value=""}
+ });
 })();
 </script>
 
