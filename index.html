@@ -773,7 +773,7 @@ function allSummary(){
           '<div class="premiumItem pTransport"><small>交通費（'+t[0]+'日 × '+yen(p.transportPerDay)+'）</small><b>'+yen(p.transport)+'</b></div>'+
         '</div>'+
         '<div class="payBreak">計算式：基本分 '+yen(p.base)+' ＋ 残業割増 '+yen(p.overtimePremium)+' ＋ 深夜割増 '+yen(p.nightPremium)+' ＋ 早朝手当 '+yen(p.earlyAllowance)+' ＋ 交通費 '+yen(p.transport)+' ＝ <b>支給額（交通費込み） '+yen(p.total)+'</b></div>'+
-        '<div class="no-print" style="margin-top:12px"><button type="button" class="admin" style="width:100%" onclick="printReport('+JSON.stringify(name)+')">このスタッフの給与明細をPDF/印刷</button></div>'+
+        '<div class="no-print" style="margin-top:12px"><button type="button" class="admin staffPayslipBtn" style="width:100%" data-staff-name="'+escAttr(name)+'">このスタッフの給与明細をPDF/印刷</button></div>'+
       '</div>'
     );
   });
@@ -1948,5 +1948,16 @@ body[data-device-role="punch"] #deviceModeChangeBtn{display:block}
     });
   });
 })();
+</script>
+
+<script>
+// YUTORU v22: iPhone-safe staff payslip print trigger
+document.addEventListener("click", function(e){
+  const btn = e.target.closest(".staffPayslipBtn");
+  if(!btn) return;
+  e.preventDefault();
+  const name = btn.getAttribute("data-staff-name") || "";
+  printReport(name);
+});
 </script>
 </body></html>
