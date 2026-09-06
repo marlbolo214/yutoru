@@ -1007,7 +1007,7 @@ function printReport(name){
   pw.document.write(
     '<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
     '<title>'+safe(selected)+' 給与明細</title>' + printCss +
-    '</head><body><div class="singlePayslipPrint">' + box.innerHTML + '</div></body></html>'
+    '</head><body><div class="singlePayslipPrint">' + box.innerHTML + '</div><!-- YUTORU v30 payroll finalization integrated -->\n</body></html>'
   );
   pw.document.close();
 
@@ -2170,7 +2170,16 @@ document.addEventListener("click", function(e){
   }
   function plusSetting(name){
     const d={payType:"hourly",monthlySalary:0,monthlyHours:0,fixedOtAmount:0,fixedOtHours:0,monthlyAllowance:0,dob:"",taxClass:"kou",dependents:0,employment:false,employmentCategory:"general",pension:false,pensionMonthly:0,healthMode:"none",kyokaiBranch:"東京",healthMonthly:0,fixedLabel:"",fixedAmount:0,careMode:"auto",taxMaster:"2026-withholding-v1",insuranceMaster:"2026-insurance-v3-official"};
-    return Object.assign(d,loadPlusAll()[name]||{});
+    const all=loadPlusAll(), v=Object.assign({},d,all[name]||{});
+    if(!v.insuranceMaster || v.insuranceMaster==="2026-insurance-v1" || v.insuranceMaster==="2026-insurance-v2"){
+      v.insuranceMaster=MASTER_2026.version;
+      if(all[name]){
+        all[name]=Object.assign({},all[name],{insuranceMaster:MASTER_2026.version});
+        try{localStorage.setItem(PLUS_KEY,JSON.stringify(all))}catch(e){}
+      }
+    }
+    if(!v.taxMaster)v.taxMaster="2026-withholding-v1";
+    return v;
   }
   function isPlusPlan(){
     return (window.SALES_TENANT?.plan||document.documentElement.dataset.plan)==="plus";
@@ -2363,7 +2372,7 @@ document.addEventListener("click", function(e){
     box.innerHTML=
       '<div class="psSheet">'+
       '<div class="psHead"><div><div class="psBrand">YUTORU Plus</div><div class="psTitle">給与明細書</div></div><div>発行日 '+iso(new Date())+'</div></div>'+
-      '<div class="psMeta"><div><b>氏名：</b>'+safe(selected)+'</div><div><b>給与期間：</b>'+iso(st)+' ～ '+iso(en)+'</div><div><b>給与区分：</b>'+payTypeLabel+'</div><div><b>適用マスター：</b>'+safe(s.insuranceMaster||MASTER_2026.version)+'</div></div>'+
+      '<div class="psMeta"><div><b>氏名：</b>'+safe(selected)+'</div><div><b>給与期間：</b>'+iso(st)+' ～ '+iso(en)+'</div><div><b>給与区分：</b>'+payTypeLabel+'</div><div><b>適用マスター：</b>'+safe(MASTER_2026.version)+'</div></div>'+
       '<div class="psSummary"><div><small>出勤日数</small><b>'+g.days+'日</b></div>'+
       '<div><small>'+(g.payType==="monthly"?"基本給":"時給")+'</small><b>'+yen(g.payType==="monthly"?g.base:g.wage)+'</b></div>'+
       '<div><small>実働</small><b>'+fmt(g.tot[1])+'</b></div><div><small>休憩</small><b>'+fmt(g.tot[2])+'</b></div></div>'+
@@ -2374,6 +2383,36 @@ document.addEventListener("click", function(e){
       '</tbody></table>'+
       '<div class="psNote">※ YUTORU Plusのデモ計算です。2026年度公式ルール確認版。健康保険・介護保険は2026年3月分から、子ども・子育て支援金は2026年4月分からの適用を想定しています。本番販売版では中央マスターの適用日・版をサーバーで管理し、給与確定時の版を保存します。</div>'+
       '</div>';
+
+    const snapshot={
+      id:iso(st)+"_"+iso(en)+"__"+selected,
+      staff_name:selected,
+      period_start:iso(st),
+      period_end:iso(en),
+      finalized_at:null,
+      pay_type:g.payType,
+      gross:Math.round(g.gross),
+      social_insurance:Math.round(d.social),
+      withholding_tax:Math.round(d.withholding),
+      total_deduction:Math.round(d.totalDeduction),
+      net_pay:Math.round(d.net),
+      tax_master_version:s.taxMaster||"2026-withholding-v1",
+      insurance_master_version:MASTER_2026.version,
+      calculation:{
+        base:Math.round(g.base),
+        fixed_ot:Math.round(g.fixedOt||0),
+        overtime:Math.round(g.overtimePay),
+        night:Math.round(g.nightPay),
+        early:Math.round(g.earlyPay),
+        other_allowance:Math.round(g.otherAllowance||0),
+        transport:Math.round(g.transport),
+        health:Math.round(d.health),
+        child_support:Math.round(d.childSupport),
+        care:Math.round(d.care),
+        pension:Math.round(d.pension),
+        employment:Math.round(d.employment)
+      }
+    };
 
     const pw=window.open("","_blank");
     if(!pw){alert("印刷画面を開けませんでした。Safariのポップアップを許可してもう一度お試しください。");return}
@@ -2392,13 +2431,28 @@ document.addEventListener("click", function(e){
       .psPay .psTotal th,.psPay .psTotal td{font-size:11pt;border-top:2px solid #111}
       .psDailyTitle{font-weight:900;margin:6px 0 3px}.psDaily{width:100%;border-collapse:collapse;font-size:8.3pt}.psDaily th,.psDaily td{border:1px solid #ccc;padding:3px 4px;text-align:center}.psDaily th{background:#f3f4f6}
       .psNote{font-size:7.3pt;color:#555;margin-top:6px}
-      @media print{html,body{width:210mm}.psSheet{page-break-inside:avoid}}
+      .psActions{position:sticky;top:0;z-index:50;display:flex;gap:8px;justify-content:center;padding:10px;background:#fffffff2;border-bottom:1px solid #ddd}
+      .psActions button{border:0;border-radius:999px;padding:10px 16px;font-weight:900;font-size:14px}
+      .psFinalize{background:#0f766e;color:#fff}.psPrint{background:#e5e7eb;color:#111}
+      .psSaved{background:#dcfce7!important;color:#166534!important}
+      @media print{html,body{width:210mm}.psSheet{page-break-inside:avoid}.psActions{display:none!important}}
     </style>`;
 
+    const snapJson=JSON.stringify(snapshot).replace(/</g,"\\u003c");
+    const actionHtml='<div class="psActions"><button id="v30Finalize" class="psFinalize" type="button">✓ 給与を確定</button><button id="v30Print" class="psPrint" type="button">PDF / 印刷</button></div>';
+    const actionJs='<script>(function(){'+
+      'const SNAP_KEY="yutoru_payroll_snapshots_v30";'+
+      'const snap='+snapJson+';'+
+      'const f=document.getElementById("v30Finalize");'+
+      'function list(){try{return JSON.parse(localStorage.getItem(SNAP_KEY)||"[]")}catch(e){return []}}'+
+      'f.addEventListener("click",function(){let a=list();snap.finalized_at=new Date().toISOString();const i=a.findIndex(v=>v.id===snap.id);if(i>=0)a[i]=snap;else a.push(snap);localStorage.setItem(SNAP_KEY,JSON.stringify(a));f.textContent="✓ 確定済み";f.classList.add("psSaved");});'+
+      'document.getElementById("v30Print").addEventListener("click",function(){window.print()});'+
+      '})();<\\/script>';
+
     pw.document.open();
-    pw.document.write('<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+safe(selected)+' 給与明細</title>'+printCss+'</head><body>'+box.innerHTML+'</body></html>');
+    pw.document.write('<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+safe(selected)+' 給与明細</title>'+printCss+'</head><body>'+actionHtml+box.innerHTML+actionJs+'</body></html>');
     pw.document.close();
-    setTimeout(()=>{try{pw.focus();pw.print()}catch(e){}},500);
+    setTimeout(()=>{try{pw.focus()}catch(e){}},200);
   };
 
   window.allSummary=function(){
@@ -2449,46 +2503,5 @@ document.addEventListener("click", function(e){
 </script>
 
 
-
-<!-- YUTORU v29: current master + payroll snapshot -->
-<style>
-#y29FinalizeBtn{position:fixed;right:18px;bottom:18px;z-index:9998;border:0;border-radius:999px;padding:13px 18px;background:#0f766e;color:#fff;font-weight:900;box-shadow:0 8px 24px #0002}
-#y29Toast{position:fixed;left:50%;bottom:78px;transform:translateX(-50%);z-index:10000;background:#0f172a;color:#fff;padding:10px 14px;border-radius:12px;font-size:12px;font-weight:800;display:none}
-@media print{#y29FinalizeBtn,#y29Toast{display:none!important}}
-</style>
-<button id="y29FinalizeBtn" type="button">✓ 給与を確定</button>
-<div id="y29Toast"></div>
-<script>
-(()=>{
- const CURRENT_TAX_MASTER="2026-withholding-v1";
- const CURRENT_INSURANCE_MASTER="2026-insurance-v3-official";
- const SNAP_KEY="yutoru_payroll_snapshots_v29";
- function toast(m){const e=document.getElementById("y29Toast");if(!e)return;e.textContent=m;e.style.display="block";setTimeout(()=>e.style.display="none",2200)}
- function snaps(){try{return JSON.parse(localStorage.getItem(SNAP_KEY)||"[]")}catch(e){return []}}
- function periodKey(){try{const r=range();return iso(r[0])+"_"+iso(r[1])}catch(e){return ""}}
- function currentStaff(){return document.getElementById("staff")?.value||staff()?.[0]||""}
- function finalize(){
-   if(!window.YUTORU_PAYROLL_PLUS?.unified){alert("給与計算データを読み込めません");return}
-   const name=currentStaff(); if(!name){alert("スタッフを選択してください");return}
-   const u=window.YUTORU_PAYROLL_PLUS.unified(name), key=periodKey();
-   const snapshot={
-     id:key+"__"+name,staff_name:name,period:key,finalized_at:new Date().toISOString(),
-     pay_type:u.g.payType,gross:Math.round(u.g.gross),social_insurance:Math.round(u.d.social),
-     withholding_tax:Math.round(u.d.withholding),total_deduction:Math.round(u.d.totalDeduction),
-     net_pay:Math.round(u.d.net),tax_master_version:CURRENT_TAX_MASTER,
-     insurance_master_version:CURRENT_INSURANCE_MASTER,
-     calculation:{base:Math.round(u.g.base),fixed_ot:Math.round(u.g.fixedOt||0),
-       overtime:Math.round(u.g.overtimePay),night:Math.round(u.g.nightPay),early:Math.round(u.g.earlyPay),
-       other_allowance:Math.round(u.g.otherAllowance||0),transport:Math.round(u.g.transport),
-       health:Math.round(u.d.health),care:Math.round(u.d.care),pension:Math.round(u.d.pension),
-       employment:Math.round(u.d.employment),child_support:Math.round(u.d.childSupport)}
-   };
-   let a=snaps(),i=a.findIndex(v=>v.id===snapshot.id); if(i>=0)a[i]=snapshot;else a.push(snapshot);
-   localStorage.setItem(SNAP_KEY,JSON.stringify(a)); toast("給与を確定しました ✓");
- }
- document.getElementById("y29FinalizeBtn")?.addEventListener("click",finalize);
- window.YUTORU_PAYROLL_SNAPSHOTS={list:snaps,finalize,CURRENT_TAX_MASTER,CURRENT_INSURANCE_MASTER};
-})();
-</script>
 
 </body></html>
