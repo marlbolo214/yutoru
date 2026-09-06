@@ -2025,7 +2025,7 @@ document.addEventListener("click", function(e){
 <button id="plusStaffBtn" type="button">👤 Plus スタッフ保険</button>
 <div id="plusStaffModal" aria-hidden="true">
  <div class="pstBox">
-  <div class="pstTitle"><h2>YUTORU Plus｜スタッフ別 税・社会保険</h2><span class="pstBadge" id="pstMasterBadge">税・保険マスター：2026年度 ✓</span></div>
+  <div class="pstTitle"><h2>YUTORU Plus｜スタッフ別 税・社会保険</h2><span class="pstBadge" id="pstMasterBadge">税・保険マスター：2026年度 公式確認版 ✓</span></div>
   <p class="pstHint">公式マスターから料率を取得する販売版を想定した画面です。現在のデモでは設定を端末内に保存します。料率そのものをスタッフごとに入力させず、必要な場合だけ固定額・手動上書きを使う設計です。</p>
 
   <div class="pstSection"><h3>対象スタッフ</h3>
@@ -2073,7 +2073,7 @@ document.addEventListener("click", function(e){
   </div>
 
   <div class="pstSection"><h3>マスター適用情報</h3>
-   <div class="pstGrid"><label class="pstField">税マスター<input id="pstTaxMaster" value="2026-withholding-v1" readonly></label><label class="pstField">保険マスター<input id="pstInsuranceMaster" value="2026-insurance-v2" readonly></label></div>
+   <div class="pstGrid"><label class="pstField">税マスター<input id="pstTaxMaster" value="2026-withholding-v1" readonly></label><label class="pstField">保険マスター<input id="pstInsuranceMaster" value="2026-insurance-v3-official" readonly></label></div>
    <p class="pstHint">本番では effective_from / version / source / verified / published をサーバーで保持し、給与確定時に適用バージョンをスナップショット保存します。</p>
   </div>
 
@@ -2112,9 +2112,9 @@ document.addEventListener("click", function(e){
    el("pstMonthlyFields").style.display=monthly?"block":"none";
    el("pstMonthlySalaryField").style.display=monthly?"block":"none";
  }
- function defaults(){return {payType:"hourly",monthlySalary:0,monthlyHours:0,fixedOtAmount:0,fixedOtHours:0,monthlyAllowance:0,dob:"",taxClass:"kou",dependents:0,employment:false,employmentCategory:"general",pension:false,pensionMonthly:0,healthMode:"none",kyokaiBranch:"東京",healthMonthly:0,fixedLabel:"",fixedAmount:0,careMode:"auto",taxMaster:"2026-withholding-v1",insuranceMaster:"2026-insurance-v2",updatedAt:null}}
+ function defaults(){return {payType:"hourly",monthlySalary:0,monthlyHours:0,fixedOtAmount:0,fixedOtHours:0,monthlyAllowance:0,dob:"",taxClass:"kou",dependents:0,employment:false,employmentCategory:"general",pension:false,pensionMonthly:0,healthMode:"none",kyokaiBranch:"東京",healthMonthly:0,fixedLabel:"",fixedAmount:0,careMode:"auto",taxMaster:"2026-withholding-v1",insuranceMaster:"2026-insurance-v3-official",updatedAt:null}}
  function readForm(){return {payType:el("pstPayType").value,monthlySalary:Number(el("pstMonthlySalary").value||0),monthlyHours:Number(el("pstMonthlyHours").value||0),fixedOtAmount:Number(el("pstFixedOtAmount").value||0),fixedOtHours:Number(el("pstFixedOtHours").value||0),monthlyAllowance:Number(el("pstMonthlyAllowance").value||0),dob:el("pstDob").value,taxClass:el("pstTaxClass").value,dependents:Number(el("pstDependents").value||0),employment:el("pstEmployment").checked,employmentCategory:el("pstEmploymentCat").value,pension:el("pstPension").checked,pensionMonthly:Number(el("pstPensionMonthly").value||0),healthMode:el("pstHealthMode").value,kyokaiBranch:el("pstKyokaiBranch").value,healthMonthly:Number(el("pstHealthMonthly").value||0),fixedLabel:el("pstFixedLabel").value.trim(),fixedAmount:Number(el("pstFixedAmount").value||0),careMode:el("pstCareMode").value,taxMaster:el("pstTaxMaster").value,insuranceMaster:el("pstInsuranceMaster").value,updatedAt:new Date().toISOString()}}
- function writeForm(v){v=Object.assign(defaults(),v||{});el("pstPayType").value=v.payType||"hourly";el("pstMonthlySalary").value=v.monthlySalary||"";el("pstMonthlyHours").value=v.monthlyHours||"";el("pstFixedOtAmount").value=v.fixedOtAmount||"";el("pstFixedOtHours").value=v.fixedOtHours||"";el("pstMonthlyAllowance").value=v.monthlyAllowance||"";payTypeToggle();el("pstDob").value=v.dob||"";el("pstTaxClass").value=v.taxClass||"kou";el("pstDependents").value=Number(v.dependents||0);el("pstEmployment").checked=!!v.employment;el("pstEmploymentCat").value=v.employmentCategory||"general";el("pstPension").checked=!!v.pension;el("pstPensionMonthly").value=v.pensionMonthly||"";el("pstHealthMode").value=v.healthMode||"none";el("pstKyokaiBranch").value=v.kyokaiBranch||"東京";el("pstHealthMonthly").value=v.healthMonthly||"";el("pstFixedLabel").value=v.fixedLabel||"";el("pstFixedAmount").value=v.fixedAmount||"";el("pstCareMode").value=v.careMode||"auto";el("pstTaxMaster").value=v.taxMaster||"2026-withholding-v1";el("pstInsuranceMaster").value=v.insuranceMaster||"2026-insurance-v2";healthToggle();el("pstCareStatus").textContent=careText();el("pstMsg").textContent=v.updatedAt?"保存済み設定を読み込みました ✓":""}
+ function writeForm(v){v=Object.assign(defaults(),v||{});el("pstPayType").value=v.payType||"hourly";el("pstMonthlySalary").value=v.monthlySalary||"";el("pstMonthlyHours").value=v.monthlyHours||"";el("pstFixedOtAmount").value=v.fixedOtAmount||"";el("pstFixedOtHours").value=v.fixedOtHours||"";el("pstMonthlyAllowance").value=v.monthlyAllowance||"";payTypeToggle();el("pstDob").value=v.dob||"";el("pstTaxClass").value=v.taxClass||"kou";el("pstDependents").value=Number(v.dependents||0);el("pstEmployment").checked=!!v.employment;el("pstEmploymentCat").value=v.employmentCategory||"general";el("pstPension").checked=!!v.pension;el("pstPensionMonthly").value=v.pensionMonthly||"";el("pstHealthMode").value=v.healthMode||"none";el("pstKyokaiBranch").value=v.kyokaiBranch||"東京";el("pstHealthMonthly").value=v.healthMonthly||"";el("pstFixedLabel").value=v.fixedLabel||"";el("pstFixedAmount").value=v.fixedAmount||"";el("pstCareMode").value=v.careMode||"auto";el("pstTaxMaster").value=v.taxMaster||"2026-withholding-v1";el("pstInsuranceMaster").value=v.insuranceMaster||"2026-insurance-v3-official";healthToggle();el("pstCareStatus").textContent=careText();el("pstMsg").textContent=v.updatedAt?"保存済み設定を読み込みました ✓":""}
  function fillStaff(){const a=activeStaff();el("pstStaff").innerHTML=a.length?a.map(n=>`<option value="${String(n).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/\"/g,"&quot;")}">${String(n).replace(/&/g,"&amp;").replace(/</g,"&lt;")}</option>`).join(""):'<option value="">スタッフ未登録</option>'}
  function loadSelected(){const n=el("pstStaff").value;writeForm(loadAll()[n]||defaults())}
  function refreshBtn(){el("plusStaffBtn").style.display=isPlus()?"block":"none"}
@@ -2158,7 +2158,7 @@ document.addEventListener("click", function(e){
     "熊本":10.08,"大分":10.08,"宮崎":9.77,"鹿児島":10.13,"沖縄":9.44
   };
   const MASTER_2026 = {
-    version:"2026-insurance-v2",
+    version:"2026-insurance-v3-official",
     pensionTotal:0.183,
     careTotal:0.0162,
     childSupportTotal:0.0023,
@@ -2169,7 +2169,7 @@ document.addEventListener("click", function(e){
     try{return JSON.parse(localStorage.getItem(PLUS_KEY)||"{}")}catch(e){return {}}
   }
   function plusSetting(name){
-    const d={payType:"hourly",monthlySalary:0,monthlyHours:0,fixedOtAmount:0,fixedOtHours:0,monthlyAllowance:0,dob:"",taxClass:"kou",dependents:0,employment:false,employmentCategory:"general",pension:false,pensionMonthly:0,healthMode:"none",kyokaiBranch:"東京",healthMonthly:0,fixedLabel:"",fixedAmount:0,careMode:"auto",taxMaster:"2026-withholding-v1",insuranceMaster:"2026-insurance-v2"};
+    const d={payType:"hourly",monthlySalary:0,monthlyHours:0,fixedOtAmount:0,fixedOtHours:0,monthlyAllowance:0,dob:"",taxClass:"kou",dependents:0,employment:false,employmentCategory:"general",pension:false,pensionMonthly:0,healthMode:"none",kyokaiBranch:"東京",healthMonthly:0,fixedLabel:"",fixedAmount:0,careMode:"auto",taxMaster:"2026-withholding-v1",insuranceMaster:"2026-insurance-v3-official"};
     return Object.assign(d,loadPlusAll()[name]||{});
   }
   function isPlusPlan(){
@@ -2251,6 +2251,12 @@ document.addEventListener("click", function(e){
     };
   }
 
+  function employeeHalfRound(n){
+    n=Math.max(0,Number(n)||0);
+    const whole=Math.floor(n), frac=n-whole;
+    return frac>0.5 ? whole+1 : whole;
+  }
+
   function deductionsFor(name,g){
     const s=plusSetting(name);
     let health=0,care=0,pension=0,employment=0,childSupport=0;
@@ -2261,15 +2267,15 @@ document.addEventListener("click", function(e){
     }else if(s.healthMode==="kyokai"){
       const std=Math.max(0,Number(s.healthMonthly||0));
       healthRate=KYOKAI_2026[s.kyokaiBranch]??null;
-      if(healthRate!=null)health=Math.round(std*(healthRate/100)/2);
-      // 2026年4月分以降の支援金。デモでは本人負担を折半で計算。
-      childSupport=Math.round(std*MASTER_2026.childSupportTotal/2);
-      if(careEligible(s))care=Math.round(std*MASTER_2026.careTotal/2);
+      if(healthRate!=null)health=employeeHalfRound(std*(healthRate/100)/2);
+      // 2026年4月分以降の支援金。本人負担は労使折半。給与控除時の円未満端数処理を適用。
+      childSupport=employeeHalfRound(std*MASTER_2026.childSupportTotal/2);
+      if(careEligible(s))care=employeeHalfRound(std*MASTER_2026.careTotal/2);
     }
 
     if(s.pension){
       const std=Math.max(0,Number(s.pensionMonthly||0));
-      pension=Math.round(std*MASTER_2026.pensionTotal/2);
+      pension=employeeHalfRound(std*MASTER_2026.pensionTotal/2);
     }
 
     if(s.employment){
@@ -2366,7 +2372,7 @@ document.addEventListener("click", function(e){
       '<table class="psDaily"><thead><tr><th>日付</th><th>出勤</th><th>退勤</th><th>実働</th><th>休憩</th><th>残業</th><th>深夜</th></tr></thead><tbody>'+
       (daily.join("")||'<tr><td colspan="7">勤務データはありません</td></tr>')+
       '</tbody></table>'+
-      '<div class="psNote">※ YUTORU Plusのデモ計算です。税・保険料率は2026年度マスターを画面確認用に組み込んでいます。本番販売版では中央マスターの適用日・版をサーバーで管理し、給与確定時の版を保存します。</div>'+
+      '<div class="psNote">※ YUTORU Plusのデモ計算です。2026年度公式ルール確認版。健康保険・介護保険は2026年3月分から、子ども・子育て支援金は2026年4月分からの適用を想定しています。本番販売版では中央マスターの適用日・版をサーバーで管理し、給与確定時の版を保存します。</div>'+
       '</div>';
 
     const pw=window.open("","_blank");
