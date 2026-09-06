@@ -2449,4 +2449,46 @@ document.addEventListener("click", function(e){
 </script>
 
 
+
+<!-- YUTORU v29: current master + payroll snapshot -->
+<style>
+#y29FinalizeBtn{position:fixed;right:18px;bottom:18px;z-index:9998;border:0;border-radius:999px;padding:13px 18px;background:#0f766e;color:#fff;font-weight:900;box-shadow:0 8px 24px #0002}
+#y29Toast{position:fixed;left:50%;bottom:78px;transform:translateX(-50%);z-index:10000;background:#0f172a;color:#fff;padding:10px 14px;border-radius:12px;font-size:12px;font-weight:800;display:none}
+@media print{#y29FinalizeBtn,#y29Toast{display:none!important}}
+</style>
+<button id="y29FinalizeBtn" type="button">✓ 給与を確定</button>
+<div id="y29Toast"></div>
+<script>
+(()=>{
+ const CURRENT_TAX_MASTER="2026-withholding-v1";
+ const CURRENT_INSURANCE_MASTER="2026-insurance-v3-official";
+ const SNAP_KEY="yutoru_payroll_snapshots_v29";
+ function toast(m){const e=document.getElementById("y29Toast");if(!e)return;e.textContent=m;e.style.display="block";setTimeout(()=>e.style.display="none",2200)}
+ function snaps(){try{return JSON.parse(localStorage.getItem(SNAP_KEY)||"[]")}catch(e){return []}}
+ function periodKey(){try{const r=range();return iso(r[0])+"_"+iso(r[1])}catch(e){return ""}}
+ function currentStaff(){return document.getElementById("staff")?.value||staff()?.[0]||""}
+ function finalize(){
+   if(!window.YUTORU_PAYROLL_PLUS?.unified){alert("給与計算データを読み込めません");return}
+   const name=currentStaff(); if(!name){alert("スタッフを選択してください");return}
+   const u=window.YUTORU_PAYROLL_PLUS.unified(name), key=periodKey();
+   const snapshot={
+     id:key+"__"+name,staff_name:name,period:key,finalized_at:new Date().toISOString(),
+     pay_type:u.g.payType,gross:Math.round(u.g.gross),social_insurance:Math.round(u.d.social),
+     withholding_tax:Math.round(u.d.withholding),total_deduction:Math.round(u.d.totalDeduction),
+     net_pay:Math.round(u.d.net),tax_master_version:CURRENT_TAX_MASTER,
+     insurance_master_version:CURRENT_INSURANCE_MASTER,
+     calculation:{base:Math.round(u.g.base),fixed_ot:Math.round(u.g.fixedOt||0),
+       overtime:Math.round(u.g.overtimePay),night:Math.round(u.g.nightPay),early:Math.round(u.g.earlyPay),
+       other_allowance:Math.round(u.g.otherAllowance||0),transport:Math.round(u.g.transport),
+       health:Math.round(u.d.health),care:Math.round(u.d.care),pension:Math.round(u.d.pension),
+       employment:Math.round(u.d.employment),child_support:Math.round(u.d.childSupport)}
+   };
+   let a=snaps(),i=a.findIndex(v=>v.id===snapshot.id); if(i>=0)a[i]=snapshot;else a.push(snapshot);
+   localStorage.setItem(SNAP_KEY,JSON.stringify(a)); toast("給与を確定しました ✓");
+ }
+ document.getElementById("y29FinalizeBtn")?.addEventListener("click",finalize);
+ window.YUTORU_PAYROLL_SNAPSHOTS={list:snaps,finalize,CURRENT_TAX_MASTER,CURRENT_INSURANCE_MASTER};
+})();
+</script>
+
 </body></html>
