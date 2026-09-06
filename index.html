@@ -1007,7 +1007,7 @@ function printReport(name){
   pw.document.write(
     '<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
     '<title>'+safe(selected)+' 給与明細</title>' + printCss +
-    '</head><body><div class="singlePayslipPrint">' + box.innerHTML + '</div><!-- YUTORU v31 Safari finalize fix -->\n</body></html>'
+    '</head><body><div class="singlePayslipPrint">' + box.innerHTML + '</div><!-- YUTORU v32 iPhone finalize direct binding -->\n</body></html>'
   );
   pw.document.close();
 
@@ -2455,26 +2455,36 @@ document.addEventListener("click", function(e){
       }
     };
 
-    const snapJson=JSON.stringify(snapshot).replace(/</g,"\\u003c");
-    const actionHtml='<div class="psActions"><button id="v31Finalize" class="psFinalize" type="button">✓ 給与を確定</button><button id="v31Print" class="psPrint" type="button">PDF / 印刷</button></div>';
-    const actionJs='<script>(function(){'+
-      'const snap='+snapJson+';'+
-      'const f=document.getElementById("v31Finalize");'+
-      'f.addEventListener("click",function(){'+
-        'try{'+
-          'if(!window.opener||typeof window.opener.YUTORU_V31_FINALIZE!=="function"){throw new Error("元画面との接続がありません");}'+
-          'const r=window.opener.YUTORU_V31_FINALIZE(snap);'+
-          'if(!r||!r.ok){throw new Error((r&&r.error)||"保存できませんでした");}'+
-          'f.textContent="✓ 確定済み";f.classList.add("psSaved");f.disabled=true;'+
-        '}catch(e){alert("給与確定の保存に失敗しました。\\n"+(e&&e.message?e.message:e));}'+
-      '});'+
-      'document.getElementById("v31Print").addEventListener("click",function(){window.print()});'+
-      '})();<\\/script>';
+    const actionHtml='<div class="psActions"><button id="v32Finalize" class="psFinalize" type="button">✓ 給与を確定</button><button id="v32Print" class="psPrint" type="button">PDF / 印刷</button></div>';
 
     pw.document.open();
-    pw.document.write('<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+safe(selected)+' 給与明細</title>'+printCss+'</head><body>'+actionHtml+box.innerHTML+actionJs+'</body></html>');
+    pw.document.write('<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+safe(selected)+' 給与明細</title>'+printCss+'</head><body>'+actionHtml+box.innerHTML+'</body></html>');
     pw.document.close();
-    setTimeout(()=>{try{pw.focus()}catch(e){}},200);
+
+    // v32: 子画面内にscript文字列を埋め込まず、元画面から直接イベントを接続。
+    // iPhone Safariで新規タブのinline scriptが実行されないケースを避ける。
+    setTimeout(()=>{
+      try{
+        const f=pw.document.getElementById("v32Finalize");
+        const p=pw.document.getElementById("v32Print");
+        if(f){
+          f.addEventListener("click",()=>{
+            const r=window.YUTORU_V31_FINALIZE(snapshot);
+            if(r&&r.ok){
+              f.textContent="✓ 確定済み";
+              f.classList.add("psSaved");
+              f.disabled=true;
+            }else{
+              pw.alert("給与確定の保存に失敗しました。\n"+((r&&r.error)||"不明なエラー"));
+            }
+          });
+        }
+        if(p)p.addEventListener("click",()=>pw.print());
+        pw.focus();
+      }catch(e){
+        try{pw.alert("給与明細ボタンの初期化に失敗しました。\n"+e.message)}catch(_){}
+      }
+    },300);
   };
 
   window.allSummary=function(){
