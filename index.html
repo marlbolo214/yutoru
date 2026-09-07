@@ -2955,4 +2955,63 @@ body.v37-admin-only [data-v37-old-floating="1"]{
 })();
 </script>
 
+
+<style>
+/* YUTORU v38: Plus切替後に再生成される旧「Plusスタッフ保険」ボタンも強制非表示 */
+body.v38-final-admin [data-v38-legacy-plus="1"]{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+</style>
+<script>
+(()=>{
+  document.body.classList.add("v38-final-admin");
+
+  function norm(t){
+    return (t||"").replace(/\s+/g," ").trim();
+  }
+
+  function removeLegacyPlusButton(){
+    document.querySelectorAll("button,a,[role='button'],div").forEach(el=>{
+      if(el.id==="v34ManageFloating" || el.closest("#v34Sheet") || el.closest('[id^="v34"]')) return;
+
+      const t=norm(el.textContent);
+      if(t!=="Plusスタッフ保険" && t!=="Plus スタッフ保険" &&
+         t!=="👤 Plusスタッフ保険" && t!=="👤 Plus スタッフ保険") return;
+
+      const cs=getComputedStyle(el);
+      const r=el.getBoundingClientRect();
+
+      // 画面上に浮く旧ショートカットだけを対象にし、設定画面内の見出し等は残す
+      const floating =
+        cs.position==="fixed" ||
+        cs.position==="sticky" ||
+        (r.left > innerWidth*.35 && r.top > innerHeight*.45 && r.width > 150);
+
+      if(floating){
+        el.dataset.v38LegacyPlus="1";
+        el.style.setProperty("display","none","important");
+        el.style.setProperty("visibility","hidden","important");
+        el.style.setProperty("pointer-events","none","important");
+      }
+    });
+  }
+
+  function sweep(){ removeLegacyPlusButton(); }
+
+  sweep();
+  [0,30,80,150,300,600,1000,1600,2500].forEach(ms=>setTimeout(sweep,ms));
+
+  new MutationObserver(()=>requestAnimationFrame(sweep))
+    .observe(document.body,{
+      subtree:true, childList:true, attributes:true,
+      attributeFilter:["style","class","hidden"]
+    });
+
+  document.addEventListener("change",()=>{ sweep(); setTimeout(sweep,50); setTimeout(sweep,250); },true);
+  document.addEventListener("click",()=>setTimeout(sweep,0),true);
+})();
+</script>
+
 </body></html>
