@@ -2861,4 +2861,98 @@ body.v36-modal-open #v34ManageFloating{display:none!important;}
 })();
 </script>
 
+
+<style>
+/* YUTORU v37: 右下の管理導線を「管理」1個に完全一本化 */
+body.v37-admin-only [data-v37-old-floating="1"]{
+  display:none!important;
+}
+</style>
+<script>
+(()=>{
+  document.body.classList.add("v37-admin-only");
+
+  function norm(t){
+    return (t||"").replace(/\s+/g," ").trim();
+  }
+
+  const oldLabels = new Set([
+    "初期設定","⚙ 初期設定","⚙️ 初期設定",
+    "給与履歴",
+    "Plusスタッフ保険","Plus スタッフ保険",
+    "＋Plus","+Plus","＋ Plus","+ Plus",
+    "＋Plus保険設定","+Plus保険設定",
+    "＋ Plus 保険設定","+ Plus 保険設定"
+  ]);
+
+  function isNewManage(el){
+    return el.id==="v34ManageFloating" ||
+           !!el.closest("#v34Sheet") ||
+           !!el.closest('[id^="v34"]');
+  }
+
+  function hideOldFloating(){
+    document.querySelectorAll("button,a,[role='button']").forEach(el=>{
+      if(isNewManage(el)) return;
+      if(!oldLabels.has(norm(el.textContent))) return;
+
+      const cs=getComputedStyle(el);
+      const r=el.getBoundingClientRect();
+
+      // 旧ボタンは固定/追従、または画面右下付近の大型アクション。
+      const rightSide = r.left > innerWidth * 0.35;
+      const lowerHalf = r.top > innerHeight * 0.38;
+      const floatingLike =
+        cs.position==="fixed" ||
+        cs.position==="sticky" ||
+        (rightSide && lowerHalf && r.width > 120);
+
+      if(floatingLike){
+        el.dataset.v37OldFloating="1";
+        el.style.setProperty("display","none","important");
+        el.style.setProperty("visibility","hidden","important");
+        el.style.setProperty("pointer-events","none","important");
+      }
+    });
+  }
+
+  function syncManage(){
+    const manage=document.getElementById("v34ManageFloating");
+    if(!manage) return;
+
+    // 管理メニュー自体、設定/保険/履歴等の大きなオーバーレイが開いている間は管理ボタンを隠す
+    const overlays=[...document.querySelectorAll("body *")].filter(el=>{
+      if(el===manage || el.closest("#v34Sheet")) return false;
+      const cs=getComputedStyle(el);
+      if(cs.display==="none" || cs.visibility==="hidden" || Number(cs.opacity)===0) return false;
+      if(cs.position!=="fixed") return false;
+      const r=el.getBoundingClientRect();
+      return r.width >= innerWidth*0.72 && r.height >= innerHeight*0.45 &&
+             r.left <= innerWidth*0.14 && r.top <= innerHeight*0.28;
+    });
+
+    manage.style.setProperty("display", overlays.length ? "none" : "", "important");
+  }
+
+  function sweep(){
+    hideOldFloating();
+    syncManage();
+  }
+
+  sweep();
+  [50,150,350,700,1200,2000].forEach(ms=>setTimeout(sweep,ms));
+
+  new MutationObserver(()=>requestAnimationFrame(sweep))
+    .observe(document.body,{
+      subtree:true,
+      childList:true,
+      attributes:true,
+      attributeFilter:["style","class","hidden","aria-hidden"]
+    });
+
+  document.addEventListener("click",()=>setTimeout(sweep,0),true);
+  document.addEventListener("change",()=>setTimeout(sweep,0),true);
+})();
+</script>
+
 </body></html>
