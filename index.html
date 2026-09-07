@@ -1007,7 +1007,7 @@ function printReport(name){
   pw.document.write(
     '<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
     '<title>'+safe(selected)+' 給与明細</title>' + printCss +
-    '</head><body><div class="singlePayslipPrint">' + box.innerHTML + '</div><!-- YUTORU v34 manage menu + backup -->\n</body></html>'
+    '</head><body><div class="singlePayslipPrint">' + box.innerHTML + '</div><!-- YUTORU v35 admin floating buttons unified -->\n</body></html>'
   );
   pw.document.close();
 
@@ -2755,6 +2755,48 @@ document.addEventListener("click", function(e){
    }catch(e){alert("復元できませんでした。\\n"+e.message)}
    finally{inp.value=""}
  });
+})();
+</script>
+
+
+<style>
+/* YUTORU v35: 旧フローティング管理ボタンを完全非表示。機能は管理メニューから呼び出す */
+body.v35-clean-admin .floatAdmin,
+body.v35-clean-admin .floatingAdmin,
+body.v35-clean-admin .plusFloat,
+body.v35-clean-admin .plus-float,
+body.v35-clean-admin [class*="float"][class*="plus" i],
+body.v35-clean-admin [class*="floating"][class*="plus" i]{
+  display:none!important;
+}
+</style>
+<script>
+(()=>{
+  document.body.classList.add("v35-clean-admin");
+
+  // Exact-text legacy controls: hide only the old fixed/floating buttons.
+  // Do not hide modal contents or the new v34 management sheet.
+  function cleanLegacy(){
+    const labels=["Plus スタッフ保険","Plusスタッフ保険","＋ Plus 保険設定","＋Plus 保険設定",
+                  "＋ Plus","＋Plus","+ Plus","+Plus","初期設定","給与履歴"];
+    [...document.querySelectorAll("button,a")].forEach(el=>{
+      if(el.id?.startsWith("v34") || el.closest("#v34Sheet") || el.closest("#v33HistoryPanel")) return;
+      const t=(el.textContent||"").replace(/\s+/g," ").trim();
+      if(!labels.includes(t)) return;
+      const cs=getComputedStyle(el);
+      // Legacy controls seen in the app are fixed-position action pills.
+      if(cs.position==="fixed"){
+        el.style.setProperty("display","none","important");
+        el.dataset.v35LegacyHidden="1";
+      }
+    });
+  }
+
+  cleanLegacy();
+  setTimeout(cleanLegacy,100);
+  setTimeout(cleanLegacy,500);
+  const mo=new MutationObserver(()=>cleanLegacy());
+  mo.observe(document.body,{childList:true,subtree:true});
 })();
 </script>
 
