@@ -2800,4 +2800,65 @@ body.v35-clean-admin [class*="floating"][class*="plus" i]{
 })();
 </script>
 
+
+<style>
+/* YUTORU v36: 管理メニューへ完全統合 */
+body.v36-clean-admin [data-v36-legacy-hidden="1"]{display:none!important;}
+body.v36-modal-open #v34ManageFloating{display:none!important;}
+</style>
+<script>
+(()=>{
+  document.body.classList.add("v36-clean-admin");
+
+  const legacyLabels = new Set([
+    "Plus スタッフ保険","Plusスタッフ保険","＋ Plus 保険設定","＋Plus 保険設定",
+    "＋Plus保険設定","+Plus保険設定","＋ Plus","＋Plus","+ Plus","+Plus","初期設定","給与履歴"
+  ]);
+
+  function norm(t){ return (t||"").replace(/\s+/g," ").trim(); }
+
+  function isV34(el){
+    return !!(el.id && el.id.startsWith("v34")) || !!el.closest('[id^="v34"]');
+  }
+
+  function hideLegacy(){
+    document.querySelectorAll("button,a").forEach(el=>{
+      if(isV34(el) || el.closest("#v33HistoryPanel")) return;
+      if(!legacyLabels.has(norm(el.textContent))) return;
+      const cs=getComputedStyle(el);
+      const r=el.getBoundingClientRect();
+      const looksFloating = cs.position==="fixed" || cs.position==="sticky" ||
+        (r.width>120 && r.left>innerWidth*0.35 && r.top>innerHeight*0.45);
+      if(looksFloating){
+        el.dataset.v36LegacyHidden="1";
+        el.style.setProperty("display","none","important");
+      }
+    });
+  }
+
+  function syncManageVisibility(){
+    const manage=document.getElementById("v34ManageFloating");
+    if(!manage) return;
+    const openOverlay=[...document.querySelectorAll("body *")].some(el=>{
+      if(el===manage || isV34(el)) return false;
+      const cs=getComputedStyle(el);
+      if(cs.display==="none" || cs.visibility==="hidden" || +cs.opacity===0) return false;
+      if(cs.position!=="fixed") return false;
+      const r=el.getBoundingClientRect();
+      if(r.width < innerWidth*.65 || r.height < innerHeight*.45) return false;
+      return r.left < innerWidth*.2 && r.top < innerHeight*.3;
+    });
+    document.body.classList.toggle("v36-modal-open", openOverlay);
+  }
+
+  function sweep(){ hideLegacy(); syncManageVisibility(); }
+  sweep();
+  [50,150,400,900,1600].forEach(ms=>setTimeout(sweep,ms));
+  new MutationObserver(()=>requestAnimationFrame(sweep))
+    .observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:["style","class","hidden"]});
+  document.addEventListener("click",()=>setTimeout(sweep,0),true);
+  document.addEventListener("change",()=>setTimeout(sweep,0),true);
+})();
+</script>
+
 </body></html>
