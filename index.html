@@ -540,7 +540,7 @@ function yen(n){return '¥'+Math.round(Number(n)||0).toLocaleString('ja-JP')}
 function transports(){try{return JSON.parse(localStorage.getItem(TK)||'{}')}catch(e){return {}}}
 function saveTransport(name,val){
   let x=transports(),n=Math.max(0,Number(val||0));
-  if(n>0)x[name]=n;else delete x[name];
+  if(val==='')delete x[name];else x[name]=n;
   localStorage.setItem(TK,JSON.stringify(x));
   allSummary();
 }
@@ -548,7 +548,7 @@ async function saveTransports(){
   let x=transports();
   document.querySelectorAll('#transportRows input[data-staff]').forEach(inp=>{
     let v=Math.max(0,Number(inp.value)||0);
-    if(v>0)x[inp.dataset.staff]=v;else delete x[inp.dataset.staff];
+    if(inp.value==='')delete x[inp.dataset.staff];else x[inp.dataset.staff]=v;
   });
   localStorage.setItem(TK,JSON.stringify(x));
   allSummary();
@@ -741,7 +741,7 @@ function renderTransportRows(){
     let row=document.createElement('div');row.className='staffrow';
     let sp=document.createElement('span');sp.textContent=n;
     let inp=document.createElement('input');inp.type='number';inp.min='0';inp.step='1';inp.inputMode='numeric';
-    inp.value=x[n]||'';inp.placeholder='1日交通費';inp.dataset.staff=n;
+    inp.value=Object.prototype.hasOwnProperty.call(x,n)?x[n]:'';inp.placeholder='通常交通費（未設定）';inp.dataset.staff=n;
     row.append(sp,inp);box.appendChild(row);
   });
 }
@@ -752,6 +752,7 @@ function allSummary(){
   let members=staff();
   members.forEach(name=>{
     let t=staffTotal(x,name),rate=Number(w[name]||0),transportPerDay=Number(tr[name]||0),early=staffEarlySummary(x,name,rate),p=payrollDetail(t,rate,transportPerDay,early.amount);
+    if(typeof periodTransport==='function'){let legacy=p.transport;p.transport=periodTransport(name);p.total+=p.transport-legacy}
     grand+=p.total;sumBase+=p.base;sumOt+=p.overtimePremium;sumNight+=p.nightPremium;sumEarly+=p.earlyAllowance;sumTransport+=p.transport;
     tableRows.push('<tr><td>'+safe(name)+'</td><td>'+t[0]+'</td><td>'+yen(rate)+'</td><td>'+fmt(t[1])+'</td><td>'+fmt(t[2])+'</td><td>'+fmt(t[3])+'</td><td>'+yen(p.overtimePremium)+'</td><td>'+fmt(t[4])+'</td><td>'+yen(p.nightPremium)+'</td><td>'+yen(p.total)+'</td></tr>');
     let initial=safe(name).charAt(0);
@@ -809,8 +810,8 @@ function setEditMinute(i,m){
 
 function renderEditRows(){
   let a=window._zuccaEdit||[];
-  const hours=Array.from({length:24},(_,h)=>String(h).padStart(2,'0'));
-  const mins15=['00','15','30','45'];
+  const hours=Array.from({length:25},(_,h)=>String(h).padStart(2,'0'));
+  const mins15=masterSettings().roundUnit===1?Array.from({length:60},(_,m)=>String(m).padStart(2,'0')):['00','15','30','45'];
 
   Q('editRows').innerHTML=a.map((v,i)=>{
     let normalized=roundPunchTime(v[0],v[1]||'09:00');
@@ -902,7 +903,7 @@ async function renameStaff(oldn){
   }
 }
 function rl(){const box=Q('list');box.replaceChildren();staff().forEach(n=>{const row=document.createElement('div');row.className='sr';const sp=document.createElement('span');sp.textContent=n;const edit=document.createElement('button');edit.className='admin';edit.textContent='名前変更';edit.onclick=()=>renameStaff(n);const b=document.createElement('button');b.className='del';b.textContent='削除';b.onclick=()=>del(n);row.append(sp,edit,b);box.appendChild(row)})}
-function csv(){let x=JSON.parse(localStorage.getItem(DK)||'{}'),w=wages(),tr=transports(),r=range(),lines=['スタッフ,期間,出勤日数,時給,実働,休憩,残業,残業割増額,深夜,深夜割増額,交通費,支給額'];staff().forEach(s=>{let t=staffTotal(x,s),rate=Number(w[s]||0),p=payrollDetail(t,rate,Number(tr[s]||0));lines.push('"'+s.replace(/"/g,'""')+'","'+iso(r[0])+'～'+iso(r[1])+'",'+t[0]+','+rate+','+fmt(t[1])+','+fmt(t[2])+','+fmt(t[3])+','+Math.round(p.overtimePremium)+','+fmt(t[4])+','+Math.round(p.nightPremium)+','+Math.round(p.transport)+','+Math.round(p.total))});let blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='かんたん勤怠管理給与_'+iso(r[0])+'_'+iso(r[1])+'.csv';a.click();URL.revokeObjectURL(a.href)}
+function csv(){let x=JSON.parse(localStorage.getItem(DK)||'{}'),w=wages(),r=range(),lines=['スタッフ,期間,出勤日数,時給,実働,休憩,残業,残業割増額,深夜,深夜割増額,交通費,支給額'];staff().forEach(s=>{let t=staffTotal(x,s),rate=Number(w[s]||0),p=payrollDetail(t,rate,0),fare=typeof periodTransport==='function'?periodTransport(s):t[0]*Number(transports()[s]||0);p.transport=fare;p.total+=fare;lines.push('"'+s.replace(/"/g,'""')+'","'+iso(r[0])+'～'+iso(r[1])+'",'+t[0]+','+rate+','+fmt(t[1])+','+fmt(t[2])+','+fmt(t[3])+','+Math.round(p.overtimePremium)+','+fmt(t[4])+','+Math.round(p.nightPremium)+','+Math.round(p.transport)+','+Math.round(p.total))});let blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='YUTORU勤怠_'+iso(r[0])+'_'+iso(r[1])+'.csv';a.click();URL.revokeObjectURL(a.href)}
 function printReport(name){
   const members=staff();
   const selected=name || Q('staff')?.value || (members.includes('デモ太郎')?'デモ太郎':members[0]);
@@ -912,7 +913,9 @@ function printReport(name){
   const rate=Number(wages()[selected]||0);
   const t=staffTotal(x,selected);
   const early=staffEarlySummary(x,selected,rate);
-  const p=payrollDetail(t,rate,Number(transports()[selected]||0),early.amount);
+  const p=payrollDetail(t,rate,0,early.amount);
+  p.transport=typeof periodTransport==='function'?periodTransport(selected):t[0]*Number(transports()[selected]||0);
+  p.total+=p.transport;
   const [st,en]=range();
 
   let daily=[], d=new Date(st);
@@ -3014,4 +3017,53 @@ body.v38-final-admin [data-v38-legacy-plus="1"]{
 })();
 </script>
 
+<style id="yutoruDemoStyles">
+/* Demo edition: Plus/cloud implementation remains in this file but is intentionally not exposed. */
+#yutoruPlanBar,#plusAdminPanel,#plusSettingsBtn,#demoPlanSwitcher,#licenseBadge,
+#licenseGate,#masterSetupBtn,#masterSetup,#cloudStatus{display:none!important}
+.top h2{margin:0}.top h2::before{content:"YUTORU\A";white-space:pre;font-size:14px;color:#86efac;letter-spacing:.16em}
+.demoAdmin{margin-top:18px}.demoAdmin h3{margin:22px 0 6px}.settingsGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dailyTransport{width:110px;padding:8px;font-size:14px}.validationError{color:#b91c1c;font-weight:800}
+.demoActions button{flex:1;background:#0f766e}.demoActions .danger{background:#b91c1c}
+@media(max-width:640px){.w{padding:10px}.c{padding:15px;border-radius:15px}.g button{min-height:72px;font-size:19px}.settingsGrid{grid-template-columns:1fr}.sr{gap:6px}.sr span{flex:1}.sr button{min-height:42px}.monthlyDemo th,.monthlyDemo td{padding:10px 7px}.top{padding:16px}}
+</style>
+<script id="yutoruDemoEdition">
+/* YUTORU local demo edition. Legacy cloud and Plus code is retained above for future use. */
+const DAILY_TRANSPORT_KEY='attendance_master_daily_transport_v2';
+const ADMIN_PIN_KEY='attendance_master_admin_pin_v2';
+const DEMO_MARK_KEY='attendance_master_demo_records_v1';
+
+function dailyTransports(){try{return JSON.parse(localStorage.getItem(DAILY_TRANSPORT_KEY)||'{}')}catch(e){return {}}}
+function hasDailyTransport(name,date){return Object.prototype.hasOwnProperty.call(dailyTransports()[name]||{},date)}
+function dailyTransport(name,date){let d=dailyTransports();return Object.prototype.hasOwnProperty.call(d[name]||{},date)?Number(d[name][date]):null}
+function setDailyTransport(name,date,value){let d=dailyTransports();d[name]??={};if(value==='')delete d[name][date];else d[name][date]=Math.max(0,Number(value)||0);localStorage.setItem(DAILY_TRANSPORT_KEY,JSON.stringify(d))}
+function snapshotTransport(name,date){if(hasDailyTransport(name,date))return;let t=transports();setDailyTransport(name,date,Object.prototype.hasOwnProperty.call(t,name)?Number(t[name]):0)}
+function periodTransport(name){let [st,en]=range(),d=new Date(st),sum=0;while(d<=en){let day=iso(d),v=dailyTransport(name,day);if(v!==null)sum+=v;else{let rows=JSON.parse(localStorage.getItem(DK)||'{}')[name]?.[day]||[];if(rows.some(r=>r[0]==='出勤'))sum+=Number(transports()[name]||0)}d.setDate(d.getDate()+1)}return sum}
+
+roundPunchTime=function(kind,time){if(!time)return time;let [h,m]=time.split(':').map(Number);if(masterSettings().roundUnit===15){m=(kind==='出勤'||kind==='休憩終了')?Math.ceil(m/15)*15:Math.floor(m/15)*15;if(m===60){h++;m=0}}return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')};
+punchTime=function(kind){let d=new Date(),time=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');return roundPunchTime(kind,time)};
+calc=function(rows){let aa=(rows||[]).map(v=>[v[0],roundPunchTime(v[0],v[1])]),ci=aa.find(v=>v[0]==='出勤'),co=[...aa].reverse().find(v=>v[0]==='退勤');let b=0,op=null,breaks=[];for(let v of aa){let m=mins(v[1]);if(v[0]==='休憩開始')op=m;if(v[0]==='休憩終了'&&op!==null){if(m<op)return[null,null,null,null];breaks.push([op,m]);b+=m-op;op=null}}if(!ci||!co)return[null,b,null,null];let st=mins(ci[1]),en=mins(co[1]);if(st===1440&&en<1440)return[null,b,null,null];if(en<st)en+=1440;let work=Math.max(0,en-st-b),night=0;for(let m=st;m<en;m++){let md=m%1440;if((md>=1320||md<300)&&!breaks.some(q=>m>=q[0]&&m<q[1]))night++}let ot=Math.max(0,work-Number(masterSettings().overtimeHours||8)*60);if(masterSettings().roundUnit===15){work=Math.floor(work/15)*15;b=Math.floor(b/15)*15;ot=Math.floor(ot/15)*15;night=Math.floor(night/15)*15}return[work,b,ot,night]};
+range=function(){let n=new Date(),close=Math.min(31,Math.max(1,Number(masterSettings().closeDay)||20));let thisClose=new Date(n.getFullYear(),n.getMonth(),Math.min(close,new Date(n.getFullYear(),n.getMonth()+1,0).getDate()));let en=n<=thisClose?thisClose:new Date(n.getFullYear(),n.getMonth()+1,Math.min(close,new Date(n.getFullYear(),n.getMonth()+2,0).getDate()));let prev=new Date(en.getFullYear(),en.getMonth()-1,Math.min(close,new Date(en.getFullYear(),en.getMonth(),0).getDate()));let st=new Date(prev);st.setDate(st.getDate()+1);return[st,en]};
+
+const legacyStamp=stamp;stamp=function(kind){let name=Q('staff').value,date=iso(new Date());legacyStamp(kind);if(name&&kind==='出勤')snapshotTransport(name,date);month(JSON.parse(localStorage.getItem(DK)||'{}'),name);allSummary()};
+const legacySaveEdits=saveEdits;saveEdits=function(){let name=Q('editStaff').value,date=Q('editDate').value,rows=window._zuccaEdit||[];if(rows.some(r=>r[0]==='出勤'))snapshotTransport(name,date);let c=calc(rows);if(c[0]===null&&rows.some(r=>r[0]==='退勤')){Q('editMsg').innerHTML='<span class="validationError">出勤・退勤時刻を確認してください</span>';return}legacySaveEdits()};
+
+month=function(x,name){let [st,en]=range(),d=new Date(st),out=[],tot=[0,0,0,0],fare=0;Q('period').textContent=iso(st)+' ～ '+iso(en);while(d<=en){let day=iso(d),a=x[name]?.[day]||[];if(a.length){let c=calc(a),times={};a.forEach(v=>times[v[0]]=v[1]);let tr=dailyTransport(name,day);if(tr===null&&a.some(v=>v[0]==='出勤'))tr=Number(transports()[name]||0);fare+=tr||0;c.forEach((v,i)=>{if(v!==null)tot[i]+=v});out.push('<tr><td>'+safe(day.slice(5).replace('-','/'))+'</td><td>'+safe(name)+'</td><td>'+safe(times['出勤']||'--')+'</td><td>'+safe(times['退勤']||'--')+'</td><td>'+fmt(c[1])+'</td><td>'+fmt(c[0])+'</td><td>'+fmt(c[3])+'</td><td><input class="dailyTransport" type="number" min="0" value="'+(tr===null?'':tr)+'" onchange="setDailyTransport(\''+escAttr(name)+'\',\''+day+'\',this.value);month(JSON.parse(localStorage.getItem(DK)||\'{}\'),Q(\'staff\').value);allSummary()"></td></tr>')}d.setDate(d.getDate()+1)}Q('monthly').innerHTML=out.join('')||'<tr><td colspan="8">この期間の打刻はありません</td></tr>';Q('totals').innerHTML='<tr class="total"><td colspan="4">合計</td><td>'+fmt(tot[1])+'</td><td>'+fmt(tot[0])+'</td><td>'+fmt(tot[3])+'</td><td>'+yen(fare)+'</td></tr>'};
+
+function setupDemoUI(){
+ document.title='YUTORU｜勤怠管理デモ';
+ let monthCard=Q('monthly').closest('.c');monthCard.querySelector('b').textContent='月間勤怠';monthCard.querySelector('thead').innerHTML='<tr><th>日付</th><th>スタッフ</th><th>出勤</th><th>退勤</th><th>休憩</th><th>実働</th><th>深夜</th><th>交通費</th></tr>';monthCard.querySelector('table').classList.add('monthlyDemo');
+ let ad=Q('ad'),panel=document.createElement('div');panel.className='demoAdmin';panel.innerHTML='<hr><h3>店舗設定</h3><div class="settingsGrid"><label>打刻単位<select id="demoRound"><option value="1">1分単位</option><option value="15">15分単位</option></select></label><label>締め日<select id="demoClose">'+Array.from({length:31},(_,i)=>'<option value="'+(i+1)+'">'+(i===30?'末日':i+1+'日')+'</option>').join('')+'</select></label></div><button class="admin" style="width:100%;margin-top:10px" onclick="saveDemoSettings()">店舗設定を保存</button><h3>管理者パスワード</h3><div class="row"><input id="newAdminPin" type="password" minlength="4" placeholder="新しいパスワード（4文字以上）"><button class="admin" onclick="changeAdminPin()">変更</button></div><h3>販売デモデータ</h3><p class="note">専用の印を付けて作成するため、デモデータだけを安全に削除できます。</p><div class="row demoActions"><button onclick="createDemoData()">デモデータを作成</button><button class="danger" onclick="deleteDemoData()">デモデータを削除</button></div>';ad.prepend(panel);
+ let s=masterSettings();Q('demoRound').value=String([1,15].includes(Number(s.roundUnit))?s.roundUnit:15);Q('demoClose').value=String(s.closeDay||20);
+ let cloudHeading=[...ad.querySelectorAll('b')].find(e=>e.textContent.includes('クラウド保存'));if(cloudHeading){let cur=cloudHeading;while(cur&&!(cur.tagName==='HR'&&cur!==cloudHeading.previousElementSibling)){let next=cur.nextElementSibling;cur.style.display='none';cur=next;if(cur?.tagName==='HR')break}}
+ document.querySelectorAll('#topPlanSelect,#demoPlanSelect').forEach(e=>e.setAttribute('aria-hidden','true'));
+}
+function saveDemoSettings(){let s=masterSettings();s.roundUnit=Number(Q('demoRound').value);s.closeDay=Number(Q('demoClose').value);delete s.supabaseUrl;delete s.supabaseKey;localStorage.setItem(MASTER_SETTINGS_KEY,JSON.stringify(s));render();allSummary();alert('店舗設定を保存しました')}
+login=function(){let pin=localStorage.getItem(ADMIN_PIN_KEY)||'1234';if(Q('pin').value===pin){Q('pb').classList.add('hide');Q('ad').classList.remove('hide');defaultEditDate();rs()}else alert('パスワードが違います')};
+function changeAdminPin(){let p=Q('newAdminPin').value;if(p.length<4){alert('4文字以上で設定してください');return}localStorage.setItem(ADMIN_PIN_KEY,p);Q('newAdminPin').value='';alert('管理者パスワードを変更しました')}
+function createDemoData(){let names=['山田 太郎','佐藤 花子','鈴木 一郎'],a=staff(),x=JSON.parse(localStorage.getItem(DK)||'{}'),w=wages(),tr=transports(),dt=dailyTransports(),marks=[],created=[];let samples=[[['出勤','09:00'],['休憩開始','12:00'],['休憩終了','13:00'],['退勤','18:00']],[['出勤','18:00'],['休憩開始','21:00'],['休憩終了','21:30'],['退勤','24:00']],[['出勤','19:00'],['退勤','22:30']]];names.forEach((n,i)=>{if(!a.includes(n)){a.push(n);created.push(n)}x[n]??={};dt[n]??={};for(let ago=1;ago<=3;ago++){let d=new Date();d.setDate(d.getDate()-ago);let day=iso(d);x[n][day]=samples[(i+ago)%samples.length];dt[n][day]=ago===2?0:(i===1?500:802);marks.push([n,day])}w[n]=[1200,1150,1300][i];tr[n]=[802,500,600][i]});localStorage.setItem(SK,JSON.stringify(a));localStorage.setItem(DK,JSON.stringify(x));localStorage.setItem(WK,JSON.stringify(w));localStorage.setItem(TK,JSON.stringify(tr));localStorage.setItem(DAILY_TRANSPORT_KEY,JSON.stringify(dt));localStorage.setItem(DEMO_MARK_KEY,JSON.stringify({days:marks,created}));rs();alert('デモデータを作成しました')}
+function deleteDemoData(){let mark=JSON.parse(localStorage.getItem(DEMO_MARK_KEY)||'{"days":[],"created":[]}'),marks=Array.isArray(mark)?mark:(mark.days||[]),created=mark.created||[],x=JSON.parse(localStorage.getItem(DK)||'{}'),dt=dailyTransports(),a=staff(),w=wages(),tr=transports();marks.forEach(([n,d])=>{if(x[n])delete x[n][d];if(dt[n])delete dt[n][d]});created.forEach(n=>{a=a.filter(v=>v!==n);delete x[n];delete dt[n];delete w[n];delete tr[n]});localStorage.setItem(SK,JSON.stringify(a));localStorage.setItem(DK,JSON.stringify(x));localStorage.setItem(WK,JSON.stringify(w));localStorage.setItem(TK,JSON.stringify(tr));localStorage.setItem(DAILY_TRANSPORT_KEY,JSON.stringify(dt));localStorage.removeItem(DEMO_MARK_KEY);rs();alert('作成したデモデータを削除しました')}
+const oldAllSummary=allSummary;allSummary=function(){oldAllSummary();let x=JSON.parse(localStorage.getItem(DK)||'{}'),sum=0;staff().forEach(n=>sum+=periodTransport(n));if(Q('sumTransport'))Q('sumTransport').textContent=yen(sum)};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupDemoUI);else setupDemoUI();
+</script>
 </body></html>
