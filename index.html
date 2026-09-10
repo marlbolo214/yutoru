@@ -2734,7 +2734,7 @@ document.addEventListener("click", function(e){
    const data={format:"YUTORU-backup",version:1,created_at:new Date().toISOString(),origin:location.origin,data:{}};
    for(let i=0;i<localStorage.length;i++){
      const k=localStorage.key(i);
-     if(k && /^(yutoru_|YUTORU_)/i.test(k)) data.data[k]=localStorage.getItem(k);
+     if(k && /^(yutoru_|attendance_master_|zucca_)/i.test(k) && !/(cloud|license|device)/i.test(k)) data.data[k]=localStorage.getItem(k);
    }
    const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
    const a=document.createElement("a");
@@ -2752,7 +2752,7 @@ document.addEventListener("click", function(e){
      const obj=JSON.parse(await f.text());
      if(obj?.format!=="YUTORU-backup"||!obj.data||typeof obj.data!=="object")throw new Error("YUTORUのバックアップファイルではありません");
      if(!confirm("現在の端末データにバックアップ内容を復元します。よろしいですか？"))return;
-     Object.entries(obj.data).forEach(([k,v])=>{if(/^(yutoru_|YUTORU_)/i.test(k))localStorage.setItem(k,String(v))});
+     Object.entries(obj.data).forEach(([k,v])=>{if(/^(yutoru_|attendance_master_|zucca_)/i.test(k)&&!/(cloud|license|device)/i.test(k))localStorage.setItem(k,String(v))});
      alert("バックアップを復元しました。画面を再読み込みします。");
      location.reload();
    }catch(e){alert("復元できませんでした。\\n"+e.message)}
@@ -3042,7 +3042,17 @@ function periodTransport(name){let [st,en]=range(),d=new Date(st),sum=0;while(d<
 
 roundPunchTime=function(kind,time){if(!time)return time;let [h,m]=time.split(':').map(Number);if(masterSettings().roundUnit===15){m=(kind==='出勤'||kind==='休憩終了')?Math.ceil(m/15)*15:Math.floor(m/15)*15;if(m===60){h++;m=0}}return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')};
 punchTime=function(kind){let d=new Date(),time=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');return roundPunchTime(kind,time)};
-calc=function(rows){let aa=(rows||[]).map(v=>[v[0],roundPunchTime(v[0],v[1])]),ci=aa.find(v=>v[0]==='出勤'),co=[...aa].reverse().find(v=>v[0]==='退勤');let b=0,op=null,breaks=[];for(let v of aa){let m=mins(v[1]);if(v[0]==='休憩開始')op=m;if(v[0]==='休憩終了'&&op!==null){if(m<op)return[null,null,null,null];breaks.push([op,m]);b+=m-op;op=null}}if(!ci||!co)return[null,b,null,null];let st=mins(ci[1]),en=mins(co[1]);if(st===1440&&en<1440)return[null,b,null,null];if(en<st)en+=1440;let work=Math.max(0,en-st-b),night=0;for(let m=st;m<en;m++){let md=m%1440;if((md>=1320||md<300)&&!breaks.some(q=>m>=q[0]&&m<q[1]))night++}let ot=Math.max(0,work-Number(masterSettings().overtimeHours||8)*60);if(masterSettings().roundUnit===15){work=Math.floor(work/15)*15;b=Math.floor(b/15)*15;ot=Math.floor(ot/15)*15;night=Math.floor(night/15)*15}return[work,b,ot,night]};
+calc=function(rows){
+ let aa=(rows||[]).map(v=>[v[0],roundPunchTime(v[0],v[1])]),ci=aa.find(v=>v[0]==='出勤'),co=[...aa].reverse().find(v=>v[0]==='退勤');
+ if(!ci||!co)return[null,0,null,null];let st=mins(ci[1]),en=mins(co[1]);if(en<st)en+=1440;
+ // 同時刻および18時間を超える逆転入力は、日跨ぎ勤務ではなく入力誤りとして扱う。
+ if(en<=st||en-st>1080)return[null,null,null,null];
+ let b=0,op=null,breaks=[];
+ for(let v of aa){let m=mins(v[1]);if(m<st)m+=1440;if(v[0]==='休憩開始')op=m;if(v[0]==='休憩終了'&&op!==null){if(m<=op)m+=1440;if(op<st||m>en||m<=op)return[null,null,null,null];breaks.push([op,m]);b+=m-op;op=null}}
+ if(op!==null)return[null,null,null,null];let work=en-st-b;if(work<0)return[null,null,null,null];let night=0;
+ for(let m=st;m<en;m++){let md=m%1440;if((md>=1320||md<300)&&!breaks.some(q=>m>=q[0]&&m<q[1]))night++}
+ let ot=Math.max(0,work-Number(masterSettings().overtimeHours||8)*60);if(masterSettings().roundUnit===15){work=Math.floor(work/15)*15;b=Math.floor(b/15)*15;ot=Math.floor(ot/15)*15;night=Math.floor(night/15)*15}return[work,b,ot,night]
+};
 range=function(){let n=new Date(),close=Math.min(31,Math.max(1,Number(masterSettings().closeDay)||20));let thisClose=new Date(n.getFullYear(),n.getMonth(),Math.min(close,new Date(n.getFullYear(),n.getMonth()+1,0).getDate()));let en=n<=thisClose?thisClose:new Date(n.getFullYear(),n.getMonth()+1,Math.min(close,new Date(n.getFullYear(),n.getMonth()+2,0).getDate()));let prev=new Date(en.getFullYear(),en.getMonth()-1,Math.min(close,new Date(en.getFullYear(),en.getMonth(),0).getDate()));let st=new Date(prev);st.setDate(st.getDate()+1);return[st,en]};
 
 const legacyStamp=stamp;stamp=function(kind){let name=Q('staff').value,date=iso(new Date());legacyStamp(kind);if(name&&kind==='出勤')snapshotTransport(name,date);month(JSON.parse(localStorage.getItem(DK)||'{}'),name);allSummary()};
@@ -3066,4 +3076,59 @@ function deleteDemoData(){let mark=JSON.parse(localStorage.getItem(DEMO_MARK_KEY
 const oldAllSummary=allSummary;allSummary=function(){oldAllSummary();let x=JSON.parse(localStorage.getItem(DK)||'{}'),sum=0;staff().forEach(n=>sum+=periodTransport(n));if(Q('sumTransport'))Q('sumTransport').textContent=yen(sum)};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupDemoUI);else setupDemoUI();
 </script>
+<style id="yutoruLightStyles">
+/* 上位版の実装を残したまま、Light版では画面・フォーカス・ポインター操作から隔離する。 */
+#yutoruPlanBar,#plusAdminPanel,#plusSettingsBtn,#demoPlanSwitcher,#licenseBadge,
+#licenseGate,#cloudStatus,#v34History,#v34Insurance,#v34Plus,#v33HistoryFloating,
+#v33HistoryPanel,#singlePayslipPrint,.payDash,.summaryCards,.closingTable,
+[data-light-hidden="true"]{display:none!important;visibility:hidden!important;pointer-events:none!important}
+#v34Setup{grid-column:1/-1}.lightEditionBadge{font-size:12px;color:#86efac;font-weight:800;letter-spacing:.08em}
+</style>
+<script id="yutoruLightEdition">
+/* 給与・Plus・ライセンス・クラウドの関数と保存値は将来版のため削除しない。 */
+(()=>{
+ const HIDDEN_LABELS=/給与|時給|賃金|明細|Plus|プラス|料金プラン|プラン切替|ライセンス|クラウド/;
+ const HIDDEN_IDS=/plus|plan|license|cloud|payslip|payroll|history/i;
+ function disableFeatureElement(el){
+  if(!el)return;el.dataset.lightHidden='true';el.hidden=true;el.setAttribute('aria-hidden','true');
+  if('inert' in el)el.inert=true;else el.setAttribute('inert','');
+  el.querySelectorAll('button,a,input,select,textarea,[tabindex]').forEach(c=>{c.disabled=true;c.tabIndex=-1;c.setAttribute('aria-hidden','true')});
+ }
+ function hideAdminSection(label){
+  const heading=[...Q('ad').querySelectorAll('b')].find(el=>(el.textContent||'').includes(label));if(!heading)return;
+  disableFeatureElement(heading);let node=heading.nextElementSibling;
+  while(node&&node.tagName!=='HR'){const next=node.nextElementSibling;disableFeatureElement(node);node=next}
+ }
+ function enforceLightBoundary(root=document){
+  root.querySelectorAll?.('[id],[class],button,a,[role="button"]').forEach(el=>{
+   if(['v34Setup','v34Backup','v34Restore'].includes(el.id)||el.closest('.demoAdmin'))return;
+   const identity=el.id+' '+(typeof el.className==='string'?el.className:'');
+   const label=(el.textContent||'').replace(/\s+/g,' ').trim();
+   if(HIDDEN_IDS.test(identity)||(label&&label.length<50&&HIDDEN_LABELS.test(label)))disableFeatureElement(el);
+  });
+ }
+ function attendanceRows(){
+  const x=JSON.parse(localStorage.getItem(DK)||'{}'),[st,en]=range(),result=[];
+  staff().forEach(name=>{let d=new Date(st);while(d<=en){const date=iso(d),rows=x[name]?.[date]||[];
+   if(rows.length){const c=calc(rows),times={};rows.forEach(v=>times[v[0]]=v[1]);let fare=dailyTransport(name,date);
+    if(fare===null&&rows.some(v=>v[0]==='出勤'))fare=Object.prototype.hasOwnProperty.call(transports(),name)?Number(transports()[name]):null;
+    result.push({date,name,inTime:times['出勤']||'',outTime:times['退勤']||'',breakTime:c[1],workTime:c[0],nightTime:c[3],transport:fare})}
+   d.setDate(d.getDate()+1)}});return result;
+ }
+ window.buildAttendanceCsv=function(){const quote=v=>'"'+String(v??'').replace(/"/g,'""')+'"',lines=['日付,スタッフ名,出勤,退勤,休憩,実働,深夜,交通費'];attendanceRows().forEach(r=>lines.push([r.date,r.name,r.inTime,r.outTime,fmt(r.breakTime),fmt(r.workTime),fmt(r.nightTime),r.transport===null?'':r.transport].map(quote).join(',')));return '\ufeff'+lines.join('\r\n')};
+ window.csv=function(){const [st,en]=range(),blob=new Blob([buildAttendanceCsv()],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='YUTORU_勤怠_'+iso(st)+'_'+iso(en)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+ window.buildAttendancePrintHtml=function(){const [st,en]=range(),rows=attendanceRows().map(r=>'<tr><td>'+safe(r.date)+'</td><td>'+safe(r.name)+'</td><td>'+safe(r.inTime||'--')+'</td><td>'+safe(r.outTime||'--')+'</td><td>'+fmt(r.breakTime)+'</td><td>'+fmt(r.workTime)+'</td><td>'+fmt(r.nightTime)+'</td><td>'+(r.transport===null?'未設定':yen(r.transport))+'</td></tr>').join('');return '<!doctype html><html lang="ja"><head><meta charset="utf-8"><title>YUTORU 勤怠表</title><style>@page{size:A4 landscape;margin:10mm}body{font-family:-apple-system,sans-serif;color:#111}h1{font-size:22px}p{color:#555}table{width:100%;border-collapse:collapse;font-size:12px}th,td{border:1px solid #bbb;padding:7px;text-align:center}th{background:#f3f4f6}.actions{text-align:center;margin:12px}.actions button{padding:10px 18px}@media print{.actions{display:none}}</style></head><body><div class="actions"><button onclick="print()">PDF／印刷</button></div><h1>YUTORU 月間勤怠</h1><p>'+iso(st)+' ～ '+iso(en)+'</p><table><thead><tr><th>日付</th><th>スタッフ名</th><th>出勤</th><th>退勤</th><th>休憩</th><th>実働</th><th>深夜</th><th>交通費</th></tr></thead><tbody>'+(rows||'<tr><td colspan="8">勤怠データはありません</td></tr>')+'</tbody></table></body></html>'};
+ window.printReport=function(){const pw=open('','_blank');if(!pw){alert('印刷画面を開けませんでした。ポップアップを許可してください。');return}pw.document.open();pw.document.write(buildAttendancePrintHtml());pw.document.close()};
+ function initializeLightUI(){
+  document.documentElement.dataset.edition='light';const title=Q('clock')?.previousElementSibling;if(title)title.innerHTML='かんたん勤怠管理 <span class="lightEditionBadge">LIGHT DEMO</span>';
+  const note=Q('status')?.parentElement?.querySelector('.note:last-child');if(note)note.textContent='打刻単位は店舗設定で1分／15分から選択できます。15分単位では出勤・休憩終了を切り上げ、休憩開始・退勤を切り捨てます。';
+  hideAdminSection('クラウド保存');hideAdminSection('時給設定');
+  const heading=[...Q('ad').querySelectorAll('b')].find(el=>(el.textContent||'').includes('全スタッフ一覧'));if(heading){heading.textContent='勤怠データ出力';const p=heading.nextElementSibling;if(p)p.textContent='給与情報を含まない勤怠専用CSVまたはPDFを出力します。'}
+  const setup=Q('v34Setup');if(setup){setup.textContent='初期設定／店舗設定';setup.onclick=()=>{Q('v34Sheet').classList.remove('show');Q('v34Sheet').setAttribute('aria-hidden','true');Q('pin').focus();Q('pin').scrollIntoView({behavior:'smooth',block:'center'})}}
+  enforceLightBoundary();new MutationObserver(records=>records.forEach(r=>r.addedNodes.forEach(node=>{if(node.nodeType===1)enforceLightBoundary(node)}))).observe(document.body,{childList:true,subtree:true});
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initializeLightUI);else initializeLightUI();
+})();
+</script>
+
 </body></html>
