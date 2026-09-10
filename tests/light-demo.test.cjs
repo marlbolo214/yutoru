@@ -5,7 +5,7 @@ const html = fs.readFileSync('index.html', 'utf8');
 function extract(start, end) { const a=html.indexOf(start), b=html.indexOf(end,a); assert(a>=0&&b>a); return html.slice(a,b+end.length); }
 const store = new Map();
 const context = {console, localStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)}, mins:t=>{const [h,m]=t.split(':').map(Number);return h*60+m}, masterSettings:()=>context.settings};
-context.settings={roundUnit:1,overtimeHours:8}; vm.createContext(context);
+context.settings={roundUnit:1,overtimeHours:8,nightStart:'22:00',nightEnd:'05:00'}; vm.createContext(context);
 vm.runInContext(extract('roundPunchTime=function', '};'),context);
 const calcStart=html.lastIndexOf('calc=function(rows)'); const calcEnd=html.indexOf('\n};',calcStart)+3;
 vm.runInContext(html.slice(calcStart,calcEnd),context);
@@ -19,7 +19,19 @@ assert.equal(context.roundPunchTime('出勤','23:59'),'24:00');
 assert.deepEqual([...context.calc([['出勤','22:00'],['退勤','24:00']])],[120,0,0,120]);
 assert.deepEqual([...context.calc([['出勤','22:00'],['休憩開始','23:30'],['休憩終了','00:15'],['退勤','06:00']])],[435,45,0,375]);
 assert.equal(context.calc([['出勤','09:00'],['退勤','08:00']])[0],null);
-assert.match(html,/日付,スタッフ名,出勤,退勤,休憩,実働,深夜,交通費/);
+assert.equal(context.calc([['出勤','09:00'],['退勤','18:30']])[2],90); // 休憩なしで8時間超
+context.settings.nightStart='21:00'; context.settings.nightEnd='04:00';
+assert.equal(context.calc([['出勤','20:00'],['休憩開始','23:00'],['休憩終了','23:30'],['退勤','05:00']])[3],390); // 設定時間帯・休憩・日跨ぎ
+context.yutoruWorkRules=()=>({earlyStart:'05:00',earlyEnd:'08:00'});
+context._ymins=context.mins;
+const earlyStart=html.indexOf('function earlyMinutesForRows'); const earlyEnd=html.indexOf('\nfunction staffEarlySummary',earlyStart);
+vm.runInContext(html.slice(earlyStart,earlyEnd),context);
+assert.equal(context.earlyMinutesForRows([['出勤','04:30'],['休憩開始','06:00'],['休憩終了','06:30'],['退勤','08:30']]),150); // 早朝から休憩を除外
+assert.equal(context.earlyMinutesForRows([['出勤','23:00'],['退勤','06:00']]),60); // 日跨ぎ勤務の早朝
+
+assert.match(html,/日付,スタッフ名,出勤,退勤,休憩,実働,残業,早朝,深夜,交通費/);
+assert.match(html,/workTime:c\[0\],overtime:c\[2\],earlyTime:earlyMinutesForRows\(rows\),nightTime:c\[3\]/);
+assert.match(html,/<th>実働<\/th><th>残業<\/th><th>早朝<\/th><th>深夜<\/th><th>交通費<\/th>/);
 assert.doesNotMatch(html.slice(html.indexOf('window.buildAttendanceCsv'),html.indexOf('window.csv=')),/給与|時給|支給/);
 assert.match(html,/r\.transport===null\?'':r\.transport/); // 0円と未設定を分離
 assert.match(html,/\^\(yutoru_\|attendance_master_\|zucca_\)/); // 勤怠をバックアップ対象に含む
