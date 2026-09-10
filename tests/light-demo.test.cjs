@@ -34,8 +34,17 @@ assert.match(html,/workTime:c\[0\],overtime:c\[2\],earlyTime:earlyMinutesForRows
 assert.match(html,/<th>実働<\/th><th>残業<\/th><th>早朝<\/th><th>深夜<\/th><th>交通費<\/th>/);
 assert.doesNotMatch(html.slice(html.indexOf('window.buildAttendanceCsv'),html.indexOf('window.csv=')),/給与|時給|支給/);
 assert.match(html,/r\.transport===null\?'':r\.transport/); // 0円と未設定を分離
-assert.match(html,/\^\(yutoru_\|attendance_master_\|zucca_\)/); // 勤怠をバックアップ対象に含む
+assert.match(html,/\^yutoru_distribution_demo_/); // デモ名前空間だけをバックアップ対象に含む
 assert.match(html,/#v34History,#v34Insurance,#v34Plus/);
 assert.match(html,/MutationObserver/);
 assert.match(html,/function payrollDetail/); assert.match(html,/PLUS_INSURANCE_KEY/); // 上位版コードを保持
+assert.match(html,/<h1 id="distributionDemoTitle">YUTORU デモ版<\/h1>/);
+assert.match(html,/実在するスタッフ名・電話番号・メールアドレスなどの個人情報は入力しないでください/);
+assert.match(html,/id="distributionDemoStart"[^>]*>デモを始める<\/button>/);
+assert.match(html,/const sampleNames=\['山田 太郎','佐藤 花子','鈴木 一郎'\]/);
+assert.match(html,/\['退勤','24:00'\]/); // 24:00 と日跨ぎのサンプル
+assert.match(html,/daily\[name\]\[date\]=i===5\?0:/); // 交通費0円を明示
+assert.match(html,/デモデータを初期状態に戻します。よろしいですか？/);
+assert.match(html,/key\.startsWith\(OWNED_PREFIX\)/); // 本番用キーには触れない
+assert.match(html,/デモ用管理者PIN：<b>1234<\/b>/);
 console.log('light-demo tests: ok');
