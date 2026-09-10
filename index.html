@@ -210,6 +210,17 @@ body[data-device-role="punch"] #punchTerminalBadge{
 </style>
 
 </head><body>
+<div id="distributionDemoGate" role="dialog" aria-modal="true" aria-labelledby="distributionDemoTitle">
+ <div class="demoGateCard">
+  <div class="demoGateBrand">YUTORU <span>DEMO</span></div>
+  <h1 id="distributionDemoTitle">YUTORU デモ版</h1>
+  <p class="demoGateLead">実際にスタッフ登録・打刻・勤怠集計をお試しいただけます。</p>
+  <div class="demoPrivacyNotice"><b>ご注意</b><br>デモ版のため、実在するスタッフ名・電話番号・メールアドレスなどの個人情報は入力しないでください。</div>
+  <p class="demoLocalNote">入力内容はこの端末内だけに保存され、他の利用者とは共有されません。</p>
+  <button id="distributionDemoStart" type="button">デモを始める</button>
+  <p class="demoPinGuide">デモ用管理者PIN：<b>1234</b></p>
+ </div>
+</div>
 <style>
 #yutoruPlanBar{
   position:sticky;top:0;z-index:8000;background:#ffffffee;backdrop-filter:blur(10px);
@@ -300,9 +311,9 @@ body[data-device-role="punch"] #punchTerminalBadge{display:block}
 
 // ZUCCA Attendance v31 all-staff calculation/save fix
 
-const PHOTO_STAFF=[];const Q=x=>document.getElementById(x),SK='attendance_master_staff_v1',DK='attendance_master_data_v1',DEF=[];
+const PHOTO_STAFF=[];const Q=x=>document.getElementById(x),SK='yutoru_distribution_demo_staff_v1',DK='yutoru_distribution_demo_data_v1',DEF=[];
 const SUPABASE_URL="",SUPABASE_KEY=""; // 販売用
-const CK='attendance_master_cloud_session_v1',DIRTY='attendance_master_dirty_days_v1',DELETED='attendance_master_deleted_staff_v1',WK='attendance_master_wages_v1',TK='attendance_master_transport_v1';
+const CK='yutoru_distribution_demo_cloud_session_v1',DIRTY='yutoru_distribution_demo_dirty_days_v1',DELETED='yutoru_distribution_demo_deleted_staff_v1',WK='yutoru_distribution_demo_wages_v1',TK='yutoru_distribution_demo_transport_v1';
 let cloudBusy=false;
 
 function cloudSetStatus(msg,ok=true){
@@ -566,7 +577,7 @@ async function saveTransports(){
 
 
 function yutoruWorkRules(){
-  try{return JSON.parse(localStorage.getItem("yutoru_work_rules_v18")||"{}")}catch(e){return {}}
+  try{return JSON.parse(localStorage.getItem("yutoru_distribution_demo_work_rules_v1")||"{}")}catch(e){return {}}
 }
 function _ymins(v){
   if(!v)return 0;
@@ -634,7 +645,7 @@ async function saveWages(){let w=wages();document.querySelectorAll('#wageList in
 
 function migrateData(){try{
   // 初回だけ旧名の修正と初期スタッフ登録を行う。削除後は自動復活させない。
-  const MK='zucca_staff_migrated_v16';
+  const MK='yutoru_distribution_demo_migrated_v1';
   let raw=localStorage.getItem(SK),a=raw?JSON.parse(raw):[];
   const rename={'シナ':'シャナ','リュウセイ':'リュウエイ','リクタイ':'リュウエイ','シュウ':'シェフ'};
   const remove=new Set([]);
@@ -1063,7 +1074,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <p class="msNote">販売者の接続情報・スタッフ情報は含まれていません。secret/service_role keyは入力しないでください。</p>
 <div class="buttons"><button id="msCancel" type="button">閉じる</button><button id="msSave" class="msSave" type="button">保存</button></div><p id="msMsg"></p></div></div>
 <script>
-const MASTER_SETTINGS_KEY='attendance_master_settings_v1';
+const MASTER_SETTINGS_KEY='yutoru_distribution_demo_settings_v1';
 function masterSettings(){try{return Object.assign({roundUnit:15,closeDay:20,overtimeHours:8,nightStart:'22:00',nightEnd:'05:00'},JSON.parse(localStorage.getItem(MASTER_SETTINGS_KEY)||'{}'))}catch(e){return {roundUnit:15,closeDay:20,overtimeHours:8,nightStart:'22:00',nightEnd:'05:00'}}}
 masterSetupBtn.onclick=()=>{let s=masterSettings();msShop.value=s.shopName||'';msRound.value=s.roundUnit||15;msClose.value=s.closeDay||20;msOt.value=s.overtimeHours||8;msNightStart.value=s.nightStart||'22:00';msNightEnd.value=s.nightEnd||'05:00';msUrl.value=s.supabaseUrl||'';msKey.value=s.supabaseKey||'';masterSetup.classList.add('open')};
 msCancel.onclick=()=>masterSetup.classList.remove('open');
@@ -1506,7 +1517,7 @@ body[data-device-role="punch"] #demoPayrollPanel{display:none!important}
     rules.earlyEnd=rules.earlyEnd||"08:00";
     rules.earlyMode=rules.earlyMode==="none"?"hourly_fixed":(rules.earlyMode||"hourly_fixed");
     rules.earlyValue=Number(rules.earlyValue||100);
-    localStorage.setItem("yutoru_work_rules_v18",JSON.stringify(rules));
+    localStorage.setItem("yutoru_distribution_demo_work_rules_v1",JSON.stringify(rules));
 
     rs(); allSummary(); renderDemoPayslip();
   }
@@ -1610,7 +1621,7 @@ body[data-device-role="punch"] #demoPayrollPanel{display:none!important}
 
 <script>
 (() => {
-  const KEY = "yutoru_work_rules_v18";
+  const KEY = "yutoru_distribution_demo_work_rules_v1";
   const $ = id => document.getElementById(id);
 
   function load(){
@@ -1692,8 +1703,8 @@ body[data-device-role="punch"] #demoPayrollPanel{display:none!important}
 
 <script>
 (() => {
-  const KEY = "yutoru_demo_devices_v14";
-  const THIS_DEVICE_KEY = "yutoru_this_device_v14";
+  const KEY = "yutoru_distribution_demo_devices_v1";
+  const THIS_DEVICE_KEY = "yutoru_distribution_demo_this_device_v1";
 
   const $ = (id) => document.getElementById(id);
 
@@ -1938,8 +1949,8 @@ body[data-device-role="punch"] #deviceModeChangeBtn{display:block}
 <script>
 (() => {
   const $ = id => document.getElementById(id);
-  const THIS_DEVICE_KEY = "yutoru_this_device_v14";
-  const DEVICE_LIST_KEY = "yutoru_demo_devices_v14";
+  const THIS_DEVICE_KEY = "yutoru_distribution_demo_this_device_v1";
+  const DEVICE_LIST_KEY = "yutoru_distribution_demo_devices_v1";
   const ADMIN_PIN = "1234"; // 開発デモ用。販売版ではサーバー認証に置換。
 
   function loadThisDevice(){
@@ -2738,7 +2749,7 @@ document.addEventListener("click", function(e){
    const data={format:"YUTORU-backup",version:1,created_at:new Date().toISOString(),origin:location.origin,data:{}};
    for(let i=0;i<localStorage.length;i++){
      const k=localStorage.key(i);
-     if(k && /^(yutoru_|attendance_master_|zucca_)/i.test(k) && !/(cloud|license|device)/i.test(k)) data.data[k]=localStorage.getItem(k);
+     if(k && /^yutoru_distribution_demo_/i.test(k) && !/cloud/i.test(k)) data.data[k]=localStorage.getItem(k);
    }
    const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
    const a=document.createElement("a");
@@ -2756,7 +2767,7 @@ document.addEventListener("click", function(e){
      const obj=JSON.parse(await f.text());
      if(obj?.format!=="YUTORU-backup"||!obj.data||typeof obj.data!=="object")throw new Error("YUTORUのバックアップファイルではありません");
      if(!confirm("現在の端末データにバックアップ内容を復元します。よろしいですか？"))return;
-     Object.entries(obj.data).forEach(([k,v])=>{if(/^(yutoru_|attendance_master_|zucca_)/i.test(k)&&!/(cloud|license|device)/i.test(k))localStorage.setItem(k,String(v))});
+     Object.entries(obj.data).forEach(([k,v])=>{if(/^yutoru_distribution_demo_/i.test(k)&&!/cloud/i.test(k))localStorage.setItem(k,String(v))});
      alert("バックアップを復元しました。画面を再読み込みします。");
      location.reload();
    }catch(e){alert("復元できませんでした。\\n"+e.message)}
@@ -3033,9 +3044,9 @@ body.v38-final-admin [data-v38-legacy-plus="1"]{
 </style>
 <script id="yutoruDemoEdition">
 /* YUTORU local demo edition. Legacy cloud and Plus code is retained above for future use. */
-const DAILY_TRANSPORT_KEY='attendance_master_daily_transport_v2';
-const ADMIN_PIN_KEY='attendance_master_admin_pin_v2';
-const DEMO_MARK_KEY='attendance_master_demo_records_v1';
+const DAILY_TRANSPORT_KEY='yutoru_distribution_demo_daily_transport_v1';
+const ADMIN_PIN_KEY='yutoru_distribution_demo_admin_pin_v1';
+const DEMO_MARK_KEY='yutoru_distribution_demo_records_v1';
 
 function dailyTransports(){try{return JSON.parse(localStorage.getItem(DAILY_TRANSPORT_KEY)||'{}')}catch(e){return {}}}
 function hasDailyTransport(name,date){return Object.prototype.hasOwnProperty.call(dailyTransports()[name]||{},date)}
@@ -3141,4 +3152,40 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 
+<style id="distributionDemoStyles">
+#distributionDemoGate{position:fixed;inset:0;z-index:30000;display:flex;align-items:center;justify-content:center;padding:20px max(16px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));box-sizing:border-box;background:linear-gradient(145deg,#0f172a,#134e4a);overflow:auto}
+#distributionDemoGate[hidden]{display:none}.demoGateCard{width:min(100%,480px);box-sizing:border-box;background:#fff;border-radius:24px;padding:28px;box-shadow:0 24px 70px #0006}.demoGateBrand{font-weight:950;letter-spacing:.12em;color:#0f172a}.demoGateBrand span{display:inline-block;margin-left:6px;padding:4px 9px;border-radius:999px;background:#ccfbf1;color:#0f766e;font-size:11px}.demoGateCard h1{font-size:28px;margin:18px 0 10px}.demoGateLead{font-size:17px;line-height:1.7}.demoPrivacyNotice{margin:18px 0;padding:15px;border-radius:14px;background:#fff7ed;color:#9a3412;line-height:1.65}.demoLocalNote,.demoPinGuide{color:#475569;font-size:13px;line-height:1.6}.demoGateCard button{width:100%;min-height:56px;background:#0f766e;font-size:18px}.demoPinGuide{text-align:center;margin-bottom:0}
+.distributionDemoBadge{position:absolute;right:16px;top:14px;padding:5px 10px;border-radius:999px;background:#ccfbf1;color:#115e59;font-size:11px;font-weight:900;letter-spacing:.1em}.top{position:relative}.demoSafetyBar{padding:10px 14px;background:#fffbeb;color:#92400e;text-align:center;font-size:12px;line-height:1.5}.demoResetFooter{margin:22px 0 88px;padding:0 10px;text-align:center}.demoResetFooter p{font-size:12px;color:#64748b}.demoResetButton{width:100%;min-height:52px;background:#b91c1c!important}.demoPinInline{padding:10px 12px;border-radius:12px;background:#ecfdf5;color:#065f46;font-size:13px;font-weight:800}
+@media(max-width:480px){.demoGateCard{padding:22px 18px;border-radius:20px}.demoGateCard h1{font-size:25px}.distributionDemoBadge{right:12px;top:12px}.w{max-width:100%;box-sizing:border-box}.tw{-webkit-overflow-scrolling:touch}}
+</style>
+<script id="distributionDemoMode">
+(()=>{
+ const STARTED_KEY='yutoru_distribution_demo_started_v1',OWNED_PREFIX='yutoru_distribution_demo_';
+ const sampleNames=['山田 太郎','佐藤 花子','鈴木 一郎'];
+ function clearDemoStorage(){const keys=[];for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key&&key.startsWith(OWNED_PREFIX))keys.push(key)}keys.forEach(key=>localStorage.removeItem(key))}
+ function seedDemoData(){
+  const [periodStart]=range(),dates=Array.from({length:6},(_,i)=>{const d=new Date(periodStart);d.setDate(d.getDate()+i+1);return iso(d)});
+  const shifts=[[['出勤','09:00'],['休憩開始','12:00'],['休憩終了','13:00'],['退勤','18:00']],[['出勤','08:00'],['休憩開始','12:00'],['休憩終了','12:45'],['退勤','18:30']],[['出勤','05:30'],['休憩開始','09:00'],['休憩終了','09:30'],['退勤','14:00']],[['出勤','21:00'],['休憩開始','23:30'],['休憩終了','24:00'],['退勤','05:30']],[['出勤','22:00'],['退勤','24:00']],[['出勤','12:00'],['休憩開始','16:00'],['休憩終了','16:30'],['退勤','21:00']]];
+  const data={},daily={};sampleNames.forEach((name,person)=>{data[name]={};daily[name]={};dates.forEach((date,i)=>{if(i%3===person||i===person+3){data[name][date]=shifts[i].map(row=>row.slice());daily[name][date]=i===5?0:[600,500,700][person]}})});
+  localStorage.setItem(SK,JSON.stringify(sampleNames));localStorage.setItem(DK,JSON.stringify(data));localStorage.setItem(TK,JSON.stringify({'山田 太郎':600,'佐藤 花子':500,'鈴木 一郎':700}));localStorage.setItem(DAILY_TRANSPORT_KEY,JSON.stringify(daily));
+  localStorage.setItem(MASTER_SETTINGS_KEY,JSON.stringify({roundUnit:15,closeDay:20,overtimeHours:8,nightStart:'22:00',nightEnd:'05:00'}));localStorage.setItem('yutoru_distribution_demo_work_rules_v1',JSON.stringify({workStart:'00:00',workEnd:'24:00',earlyStart:'05:00',earlyEnd:'08:00',earlyMode:'none',earlyValue:0,nightStart:'22:00',nightEnd:'05:00'}));
+  localStorage.setItem(ADMIN_PIN_KEY,'1234');localStorage.setItem(DEMO_MARK_KEY,JSON.stringify({seeded:true,names:sampleNames,dates}));localStorage.setItem(STARTED_KEY,'1');
+ }
+ function refresh(){if(typeof rs==='function')rs();const settings=masterSettings(),round=Q('demoRound'),close=Q('demoClose');if(round)round.value=String(settings.roundUnit);if(close)close.value=String(settings.closeDay)}
+ window.createDemoData=function(){seedDemoData();refresh();alert('サンプルデータを初期状態にしました')};
+ window.resetDistributionDemo=function(){if(!confirm('デモデータを初期状態に戻します。よろしいですか？'))return;clearDemoStorage();seedDemoData();refresh();Q('ad')?.classList.add('hide');Q('pb')?.classList.remove('hide');if(Q('pin'))Q('pin').value='';alert('デモを初期状態に戻しました')};
+ function initialize(){
+  const gate=Q('distributionDemoGate'),started=localStorage.getItem(STARTED_KEY)==='1';if(started)gate.hidden=true;
+  Q('distributionDemoStart').onclick=()=>{clearDemoStorage();seedDemoData();gate.hidden=true;refresh()};
+  const top=Q('clock')?.parentElement;if(top&&!Q('distributionDemoBadge'))top.insertAdjacentHTML('beforeend','<span id="distributionDemoBadge" class="distributionDemoBadge">DEMO</span>');
+  top?.insertAdjacentHTML('afterend','<div class="demoSafetyBar">このデモは端末内だけに保存されます。実在する人物の個人情報は入力しないでください。</div>');
+  Q('pb')?.parentElement?.insertAdjacentHTML('afterbegin','<p class="demoPinInline">デモ用管理者PIN：1234</p>');
+  Q('v34Backup')?.parentElement?.insertAdjacentHTML('beforeend','<button class="v34Btn wide demoResetButton" type="button" onclick="resetDistributionDemo()">デモを初期状態に戻す</button>');
+  Q('v34Card')?.insertAdjacentHTML('beforeend','<div class="demoPinGuide">デモ用管理者PIN：<b>1234</b></div>');
+  Q('v34Sheet')?.insertAdjacentHTML('afterend','<footer class="demoResetFooter no-print"><p>データはこの端末内だけに保存されます</p><button class="demoResetButton" type="button" onclick="resetDistributionDemo()">デモを初期状態に戻す</button></footer>');
+  if(started)refresh();
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initialize);else initialize();
+})();
+</script>
 </body></html>
