@@ -1,54 +1,24 @@
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const html = fs.readFileSync('standard-demo.html', 'utf8');
-
-assert.match(html, /YUTORU Standard デモ版/);
-assert.match(html, /打刻専用で試す/);
-assert.match(html, /管理者で試す/);
-assert.match(html, /経理で試す/);
-assert.match(html, /const KEY='yutoru_standard_demo_v1'/);
-assert.match(html, /schemaVersion:2/);
-assert.match(html, /data\?\.schemaVersion===2\?data:initial\(\)/);
-assert.match(html, /punch:\['punch'\]/);
-assert.match(html, /manager:\['dashboard','staff','attendance','settings','devices','export'\]/);
-assert.match(html, /accounting:\['dashboard','attendance','payroll','history','export'\]/);
-const punchView = html.slice(html.indexOf('punch:()=>`'), html.indexOf('\ndashboard:()=>'));
-const staffView = html.slice(html.indexOf('\nstaff:()=>`'), html.indexOf('\nattendance:()=>'));
-assert.ok(punchView.length > 100);
-assert.ok(staffView.length > 100);
-assert.doesNotMatch(punchView, /給与明細を見る|salary/);
-assert.doesNotMatch(staffView, /基本時給|給与設定|給与明細/);
-assert.match(html, /staff:\[\s*\n \{id:'s1'/);
-assert.ok((html.match(/employment:'(?:正社員|アルバイト)'/g) || []).length >= 5);
-assert.doesNotMatch(html, /payType/);
-assert.doesNotMatch(html, new RegExp('月' + '給'));
-for (const [name, rate] of [['山田 太郎',1500],['佐藤 花子',1300],['鈴木 一郎',1250],['田中 美咲',1400],['高橋 健',1600]]) {
-  assert.match(html, new RegExp(`name:'${name}'.*rate:${rate}`));
-}
-for (const pattern of ['通常勤務','8時間超・残業','早朝勤務','深夜・日跨ぎ','休憩なし','交通費0円']) assert.match(html, new RegExp(pattern));
-assert.match(html, /overtime:1\.25,night:1\.25/);
-assert.match(html, /base=sum\.work\/60\*s\.rate/); // 基本給与 = 時給 × 全実働
-assert.match(html, /ot=sum\.ot\/60\*s\.rate\*\(overtimeRate-1\)/); // 残業の割増部分
-assert.match(html, /night=sum\.night\/60\*s\.rate\*\(state\.settings\.night-1\)/);
-assert.match(html, /early=sum\.early\/60\*state\.settings\.earlyHourly/);
-assert.match(html, /total=base\+ot\+night\+early\+sum\.transport\+s\.other/);
-assert.match(html, /a\.transport===null\|\|a\.transport===undefined/); // 0円と未設定を区別
-assert.match(html, /transport:0,type:'休憩なし・日別交通費0円'/);
-for (const label of ['基本時給','実働時間','基本給与（時給×実働）','残業時間 / 残業手当','早朝時間 / 早朝手当','深夜時間 / 深夜手当','その他手当','交通費','支給合計']) assert.match(html, new RegExp(label));
-assert.match(html, /給与明細PDF \/ 印刷/);
-assert.match(html, /勤怠CSV/);
-assert.match(html, /勤怠PDF \/ 印刷/);
-assert.match(html, /デモを初期状態に戻す/);
-assert.match(html, /Lightデモや本番データには影響しません/);
-assert.match(html, /店舗打刻端末',1/);
-assert.match(html, /管理者端末',2/);
-assert.match(html, /経理端末',1/);
-assert.match(html, /スタッフ登録人数 無制限/);
-assert.match(html, /requestedRole!==role\|\|!access\[role\]\.includes\(page\)/);
-assert.match(html, /if\(state\.role!==['"]accounting['"]\)return/);
-assert.match(html, /税金・社会保険等の控除は本デモでは未実装/);
-
-const light = fs.readFileSync('index.html', 'utf8');
-assert.match(light, /YUTORU デモ版/);
-assert.doesNotMatch(light, /yutoru_standard_demo_v1/);
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const crypto=require('node:crypto');
+const core=require('../standard/standard.js');
+const html=fs.readFileSync('standard-demo.html','utf8');
+const css=fs.readFileSync('standard/standard.css','utf8');
+assert.equal(crypto.createHash('sha256').update(fs.readFileSync('index.html')).digest('hex'),'b0960f38872dbd1fe02c1cf56ab5fb52a70097f1aa023bccbd9d72d061124628','Light版が変更されています');
+assert.match(html,/Standard デモ版/);assert.match(html,/standard\/standard\.js/);
+assert.equal(core.STORAGE_KEY,'yutoru_standard_demo_v3');assert.doesNotMatch(core.STORAGE_KEY,/light/i);
+assert.deepEqual(core.ACCESS.punch,['punch']);
+assert.ok(!core.authorize('punch','payroll'));assert.ok(!core.authorize('manager','payroll'));assert.ok(core.authorize('accounting','payroll'));assert.ok(core.authorize('accounting','history'));
+const state=core.seed();for(let i=0;i<1000;i++)state.staff.push({id:'x'+i,name:'x'});assert.equal(state.staff.length,1004,'人数上限なし');
+const normal=core.attendanceDetail({start:'09:00',end:'18:00',breakMin:60});assert.equal(normal.work,480);assert.equal(normal.overtime,0);
+const noBreak=core.attendanceDetail({start:'09:00',end:'19:00',breakMin:0});assert.equal(noBreak.work,600);assert.equal(noBreak.overtime,120);
+const overnight=core.attendanceDetail({start:'22:00',end:'06:00',breakMin:0});assert.equal(overnight.work,480);assert.equal(overnight.night,420);assert.equal(overnight.early,60);
+const s={id:'a',name:'A',rate:1000,overtimeRate:.25,earlyRate:.25,nightRate:.25,transport:500,other:100};
+assert.equal(core.fare({transport:null},s),500);assert.equal(core.fare({transport:0},s),0);assert.equal(core.fare({transport:800},s),800);
+const pay=core.calculatePayroll(s,[{staff:'a',start:'05:00',end:'14:00',breakMin:0,transport:0}]);
+assert.equal(pay.work,540);assert.equal(pay.overtime,60);assert.equal(pay.early,180);assert.equal(pay.base,9000);assert.equal(pay.otPay,250);assert.equal(pay.earlyPay,750);assert.equal(pay.transport,0);assert.equal(pay.total,10100);
+const snap=core.snapshot('2026-09',s,pay);s.rate=9999;assert.equal(snap.settings.rate,1000);assert.equal(snap.result.total,10100);
+const output=core.csv({staff:[s],attendance:[{staff:'a',date:'2026-09-01',start:'09:00',end:'18:00',breakMin:60,transport:0}]});assert.match(output,/日付,スタッフ名/);assert.match(output,/2026-09-01,A/);
+assert.match(css,/\.mobile-list\{display:grid/);assert.match(css,/@page\{size:A4 portrait/);assert.match(css,/body\.printing>#?\*:not|body\.printing>\*:not/);assert.match(css,/\.nav\{[^}]*overflow-x:auto/);
+for(const label of ['基本給与','残業手当','早朝手当','深夜手当','その他手当','交通費','支給合計','給与設定','給与明細を見る'])assert.match(fs.readFileSync('standard/standard.js','utf8'),new RegExp(label));
 console.log('standard-demo tests: ok');
