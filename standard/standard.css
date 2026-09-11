@@ -2,3 +2,14 @@
 @media(max-width:700px){.container{padding:10px}.card{padding:15px}.grid,.form-grid,.role-grid{grid-template-columns:1fr}.role-grid button{min-height:100px}.desktop-table{display:none}.mobile-list{display:grid;gap:10px}.app-header{align-items:flex-start}.nav{top:72px}.pay-card .actions>*{flex:1}.punch-actions button{min-height:70px}.work-card dl,.pay-card dl{grid-template-columns:1fr 1fr}}
 @page{size:A4 portrait;margin:14mm}@media print{body{background:white}.no-print,.gate{display:none!important}.container{width:100%;padding:0}.card{box-shadow:none}body.printing>*:not(#modal){display:none!important}body.printing #modal{display:block;position:static;width:auto;max-height:none;box-shadow:none}body.printing #modal-content{padding:0}.print-only{display:block}.print-sheet{font-size:11pt}.print-sheet .grid{grid-template-columns:1fr 1fr}.print-sheet .metric{break-inside:avoid}.print-sheet .total{font-size:24pt!important}}
 .start-badge{display:inline-block;margin:-6px 0 10px;padding:6px 11px;border-radius:99px;background:var(--mint);color:#05665d;font-size:12px;font-weight:900;letter-spacing:.06em}.setting-list{display:grid;gap:10px}.setting-list .metric small{display:block;margin-top:4px}.status-line{display:flex;align-items:center;justify-content:space-between;gap:10px}.status-pill{padding:5px 9px;border-radius:99px;background:var(--mint);color:#05665d;font-size:12px;font-weight:800}
+
+/* Keep the Standard header on one line on iPhone-sized screens. */
+@media(max-width:430px){
+  .app-header{min-height:64px;align-items:center;gap:6px;padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}
+  .app-header>div{display:flex;align-items:center;min-width:0;gap:5px;white-space:nowrap;flex-wrap:nowrap}
+  .logo{font-size:15px;letter-spacing:.02em;white-space:nowrap}
+  .demo-badge{margin-left:0;padding:4px 6px;font-size:9px;white-space:nowrap}
+  .app-header label{flex:0 0 78px;max-width:78px;white-space:nowrap;font-size:9px}
+  .app-header select{margin-top:2px;padding:5px 3px;font-size:10px;max-width:78px}
+  .nav{top:64px}
+}
