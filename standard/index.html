@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#10233f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>YUTORU Standard DEMO</title>
+  <link rel="stylesheet" href="standard.css">
+</head>
+<body>
+  <div id="role-gate" class="gate" role="dialog" aria-modal="true" aria-labelledby="gate-title">
+    <section class="gate__panel">
+      <p class="eyebrow">YUTORU STANDARD</p><h1 id="gate-title">YUTORU Standard</h1>
+      <span class="start-badge">Standard DEMO</span>
+      <p>利用する権限を選択してください。権限ごとに必要な機能だけを表示します。</p>
+      <p class="demo-note">デモデータは、この端末のStandard版専用領域にのみ保存されます。</p>
+      <div class="role-grid">
+        <button data-role="punch"><b>打刻専用</b><span>出勤・休憩・退勤</span></button>
+        <button data-role="manager"><b>管理者</b><span>スタッフ・勤怠・店舗管理</span></button>
+        <button data-role="accounting"><b>経理</b><span>給与計算・明細・出力</span></button>
+      </div>
+    </section>
+  </div>
+  <header class="app-header no-print">
+    <div><b class="logo">YUTORU Standard</b><span class="demo-badge">Standard DEMO</span></div>
+    <label>権限<select id="role-switch"><option value="punch">打刻専用</option><option value="manager">管理者</option><option value="accounting">経理</option></select></label>
+  </header>
+  <nav id="nav" class="nav no-print" aria-label="メインナビゲーション"></nav>
+  <main id="app" class="container"></main>
+  <dialog id="modal"><div id="modal-content"></div></dialog>
+  <footer class="no-print">YUTORU Standard DEMO — Light版とは独立した専用アプリです</footer>
+  <script src="standard.js"></script>
+</body>
+</html>
