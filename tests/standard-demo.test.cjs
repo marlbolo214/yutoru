@@ -26,6 +26,14 @@ assert.match(css,/\.mobile-list\{display:grid/);assert.match(css,/@page\{size:A4
 for(const label of ['基本給与','残業手当','早朝手当','深夜手当','その他手当','交通費','支給合計','給与設定','給与明細を見る'])assert.match(fs.readFileSync('standard/standard.js','utf8'),new RegExp(label));
 for(const label of ['スタッフ名','基本給与','残業手当','深夜手当','その他手当','交通費','支給合計'])assert.match(js,new RegExp(`<th>${label}</th>`),'給与一覧PDFの列が不足しています');
 for(const label of ['基本時給','実働時間','基本給与','残業時間／残業手当','深夜時間／深夜手当','その他手当','交通費','支給合計'])assert.match(js,new RegExp(`<dt>${label}</dt>`),'給与明細PDFの項目が不足しています');
-assert.match(js,/class="print-logo">YUTORU</);assert.match(js,/id="payroll-print"/);assert.match(js,/printing-payroll/);
+assert.match(js,/class="print-logo">YUTORU</);assert.match(js,/id="payroll-print"/);
+assert.match(js,/w\.open\('','_blank'\)/,'印刷専用ページを新しい画面で開いていません');
+assert.match(js,/page\.document\.write\(printDocument/,'印刷専用HTMLを書き込んでいません');
+assert.match(js,/ポップアップを許可して/,'ポップアップブロック時の案内がありません');
+assert.match(js,/共有ボタンから“プリント”または“ファイルに保存”/,'iPhone向けの案内がありません');
+assert.match(js,/@media print\{/);assert.match(js,/\.guide\{display:none\}/,'印刷時に案内が非表示になりません');
+assert.doesNotMatch(js,/w\.print\(/,'元画面からwindow.print()を呼び出しています');
+assert.match(js,/openPrintPage\('給与一覧',payrollPrintContent\(\)\)/);
+assert.match(js,/openPrintPage\('勤怠一覧',attendancePrintContent\(\)\)/);
 assert.match(css,/\.payroll-table thead\{display:table-header-group\}/);assert.match(css,/\.payroll-table tr\{[^}]*break-inside:avoid/);assert.match(css,/\.print-sheet\{[^}]*break-inside:avoid/);
 console.log('standard-demo tests: ok');
