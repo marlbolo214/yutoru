@@ -13,6 +13,7 @@ assert.equal(vercel.cleanUrls,true);assert.equal(vercel.trailingSlash,false);
 assert.deepEqual(core.ACCESS.punch,['punch']);
 assert.ok(!core.authorize('punch','payroll'));assert.ok(!core.authorize('manager','payroll'));assert.ok(core.authorize('accounting','payroll'));assert.ok(core.authorize('accounting','history'));
 const state=core.seed();for(let i=0;i<1000;i++)state.staff.push({id:'x'+i,name:'x'});assert.equal(state.staff.length,1004,'人数上限なし');
+for(const [staffCount,pageCount] of [[1,1],[4,1],[5,2],[8,2],[9,3]]){const staff=Array.from({length:staffCount},(_,i)=>i);const pages=core.groupsOfFour(staff);assert.equal(pages.length,pageCount,`${staffCount}人のページ数が不正です`);assert.ok(pages.every(page=>page.length<=4),'1ページが4人を超えています');assert.deepEqual(pages.flat(),staff,'スタッフの並びまたは人数が変わっています')}
 const normal=core.attendanceDetail({start:'09:00',end:'18:00',breakMin:60});assert.equal(normal.work,480);assert.equal(normal.overtime,0);
 const noBreak=core.attendanceDetail({start:'09:00',end:'19:00',breakMin:0});assert.equal(noBreak.work,600);assert.equal(noBreak.overtime,120);
 const overnight=core.attendanceDetail({start:'22:00',end:'06:00',breakMin:0});assert.equal(overnight.work,480);assert.equal(overnight.night,420);assert.equal(overnight.early,60);
@@ -34,6 +35,12 @@ assert.match(js,/共有ボタンから“プリント”または“ファイル
 assert.match(js,/@media print\{/);assert.match(js,/\.guide\{display:none\}/,'印刷時に案内が非表示になりません');
 assert.doesNotMatch(js,/w\.print\(/,'元画面からwindow.print()を呼び出しています');
 assert.match(js,/openPrintPage\('給与一覧',payrollPrintContent\(\)\)/);
+assert.match(js,/id="four-up-print">4人ずつPDF \/ 印刷</);
+assert.match(js,/openPrintPage\('給与明細書（4人ずつ）',fourUpPrintContent\(\)\)/,'4人分専用ページを新しいタブで開いていません');
+assert.match(js,/\.four-up-page\{display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\);grid-template-rows:repeat\(2,minmax\(0,1fr\)\)/,'2×2配置ではありません');
+assert.match(js,/\.four-up-page\{[^}]*break-after:page;page-break-after:always/,'4人ごとの改ページ指定がありません');
+assert.match(js,/\.four-up-slip\{[^}]*break-inside:avoid;page-break-inside:avoid/,'明細の分割防止指定がありません');
+for(const label of ['基本時給','実働時間','基本給与','残業時間 / 残業手当','深夜時間 / 深夜手当','その他手当','交通費','支給合計'])assert.match(js,new RegExp(label.replace('/','\\/')),'4人ずつ給与明細の項目が不足しています');
 assert.match(js,/openPrintPage\('勤怠一覧',attendancePrintContent\(\)\)/);
 assert.match(css,/\.payroll-table thead\{display:table-header-group\}/);assert.match(css,/\.payroll-table tr\{[^}]*break-inside:avoid/);assert.match(css,/\.print-sheet\{[^}]*break-inside:avoid/);
 console.log('standard-demo tests: ok');
