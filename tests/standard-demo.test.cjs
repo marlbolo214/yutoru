@@ -4,6 +4,7 @@ const crypto=require('node:crypto');
 const core=require('../standard/standard.js');
 const html=fs.readFileSync('standard/index.html','utf8');
 const css=fs.readFileSync('standard/standard.css','utf8');
+const js=fs.readFileSync('standard/standard.js','utf8');
 const vercel=JSON.parse(fs.readFileSync('standard/vercel.json','utf8'));
 assert.equal(crypto.createHash('sha256').update(fs.readFileSync('index.html')).digest('hex'),'b0960f38872dbd1fe02c1cf56ab5fb52a70097f1aa023bccbd9d72d061124628','Light版が変更されています');
 assert.match(html,/Standard DEMO/);assert.match(html,/standard\.js/);
@@ -23,4 +24,8 @@ const snap=core.snapshot('2026-09',s,pay);s.rate=9999;assert.equal(snap.settings
 const output=core.csv({staff:[s],attendance:[{staff:'a',date:'2026-09-01',start:'09:00',end:'18:00',breakMin:60,transport:0}]});assert.match(output,/日付,スタッフ名/);assert.match(output,/2026-09-01,A/);
 assert.match(css,/\.mobile-list\{display:grid/);assert.match(css,/@page\{size:A4 portrait/);assert.match(css,/body\.printing>#?\*:not|body\.printing>\*:not/);assert.match(css,/\.nav\{[^}]*overflow-x:auto/);
 for(const label of ['基本給与','残業手当','早朝手当','深夜手当','その他手当','交通費','支給合計','給与設定','給与明細を見る'])assert.match(fs.readFileSync('standard/standard.js','utf8'),new RegExp(label));
+for(const label of ['スタッフ名','基本給与','残業手当','深夜手当','その他手当','交通費','支給合計'])assert.match(js,new RegExp(`<th>${label}</th>`),'給与一覧PDFの列が不足しています');
+for(const label of ['基本時給','実働時間','基本給与','残業時間／残業手当','深夜時間／深夜手当','その他手当','交通費','支給合計'])assert.match(js,new RegExp(`<dt>${label}</dt>`),'給与明細PDFの項目が不足しています');
+assert.match(js,/class="print-logo">YUTORU</);assert.match(js,/id="payroll-print"/);assert.match(js,/printing-payroll/);
+assert.match(css,/\.payroll-table thead\{display:table-header-group\}/);assert.match(css,/\.payroll-table tr\{[^}]*break-inside:avoid/);assert.match(css,/\.print-sheet\{[^}]*break-inside:avoid/);
 console.log('standard-demo tests: ok');
