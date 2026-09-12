@@ -14,3 +14,33 @@
   .app-header select{margin-top:2px;padding:5px 3px;font-size:10px;max-width:78px}
   .nav{top:64px}
 }
+
+
+/* Mobile UX improvements */
+.connection-status{position:sticky;z-index:14;top:111px;margin:0;padding:6px 12px;text-align:center;font-size:12px;font-weight:800;border-bottom:1px solid var(--line);background:#eaf7f4;color:#05665d}
+.connection-status.is-offline{background:#fff3cd;color:#805f0a}
+.punch-current{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding:11px 12px;border-radius:12px;background:#f3f7f8}
+.punch-current span{color:var(--muted);font-size:12px}.punch-current b{font-size:18px}
+.punch-actions--guided{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+.punch-actions .is-next{outline:3px solid #9fe6d9;box-shadow:0 0 0 4px #d9f5ef}
+.punch-help{margin:10px 0 0;color:var(--muted);font-size:12px}
+.latest-punch{display:grid;gap:3px;margin:10px 0;padding:12px;border-radius:12px;background:#eef8f6}
+.latest-punch small,.calc-time{color:var(--muted);font-size:11px}
+.calc-time{display:inline-block;margin-left:6px}
+.manager-sections details{border-top:1px solid var(--line);padding:10px 0}
+.manager-sections details:first-of-type{margin-top:8px}
+.manager-sections summary{cursor:pointer;font-weight:900;list-style:none;touch-action:manipulation}
+.manager-sections summary::-webkit-details-marker{display:none}
+.manager-sections summary::after{content:'＋';float:right;color:var(--teal)}
+.manager-sections details[open] summary::after{content:'−'}
+.quick-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+button,.btn,.nav button,.role-grid button,summary{touch-action:manipulation}
+@media(max-width:700px){
+  .connection-status{top:112px}
+  .quick-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:430px){
+  .connection-status{top:105px}
+  .quick-grid{grid-template-columns:1fr}
+  .calc-time{display:block;margin:2px 0 0}
+}
