@@ -27,5 +27,10 @@ for(const label of ['基本給与','残業手当','早朝手当','深夜手当',
 for(const label of ['スタッフ名','基本給与','残業手当','深夜手当','その他手当','交通費','支給合計'])assert.match(js,new RegExp(`<th>${label}</th>`),'給与一覧PDFの列が不足しています');
 for(const label of ['基本時給','実働時間','基本給与','残業時間／残業手当','深夜時間／深夜手当','その他手当','交通費','支給合計'])assert.match(js,new RegExp(`<dt>${label}</dt>`),'給与明細PDFの項目が不足しています');
 assert.match(js,/class="print-logo">YUTORU</);assert.match(js,/id="payroll-print"/);assert.match(js,/printing-payroll/);
+assert.match(js,/addEventListener\('afterprint',cleanup,\{once:true\}\)/,'印刷後のクリーンアップがありません');
+assert.match(js,/requestAnimationFrame\(\(\)=>w\.requestAnimationFrame\(start\)\)/,'印刷前にDOM反映を待機していません');
+assert.match(js,/printPage\('printing'\)/);assert.match(js,/printPage\('printing-payroll'\)/);assert.match(js,/printPage\(\)/);
+assert.doesNotMatch(js,/w\.print\(\);d\.body\.classList\.remove/,'印刷クラスを直後に削除しています');
+assert.match(js,/typeof w\.print!==['"]function['"]/,'印刷非対応時の処理がありません');
 assert.match(css,/\.payroll-table thead\{display:table-header-group\}/);assert.match(css,/\.payroll-table tr\{[^}]*break-inside:avoid/);assert.match(css,/\.print-sheet\{[^}]*break-inside:avoid/);
 console.log('standard-demo tests: ok');
