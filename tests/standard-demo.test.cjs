@@ -34,6 +34,9 @@ assert.match(js,/共有ボタンから“プリント”または“ファイル
 assert.match(js,/@media print\{/);assert.match(js,/\.guide\{display:none\}/,'印刷時に案内が非表示になりません');
 assert.doesNotMatch(js,/w\.print\(/,'元画面からwindow.print()を呼び出しています');
 assert.match(js,/openPrintPage\('給与一覧',payrollPrintContent\(\)\)/);
+assert.match(js,/4人ずつPDF／印刷/);assert.match(js,/class="batch-page"/);
+assert.match(js,/@page\{size:A4 portrait;margin:0\}/);assert.match(js,/grid-template-columns:repeat\(2,1fr\)/);
+assert.match(js,/page-break-inside:avoid/);
 assert.match(js,/openPrintPage\('勤怠一覧',attendancePrintContent\(\)\)/);
 assert.match(css,/\.payroll-table thead\{display:table-header-group\}/);assert.match(css,/\.payroll-table tr\{[^}]*break-inside:avoid/);assert.match(css,/\.print-sheet\{[^}]*break-inside:avoid/);
 console.log('standard-demo tests: ok');
