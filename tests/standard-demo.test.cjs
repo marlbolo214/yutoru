@@ -39,4 +39,11 @@ assert.match(js,/@page\{size:A4 portrait;margin:0\}/);assert.match(js,/grid-temp
 assert.match(js,/page-break-inside:avoid/);
 assert.match(js,/openPrintPage\('勤怠一覧',attendancePrintContent\(\)\)/);
 assert.match(css,/\.payroll-table thead\{display:table-header-group\}/);assert.match(css,/\.payroll-table tr\{[^}]*break-inside:avoid/);assert.match(css,/\.print-sheet\{[^}]*break-inside:avoid/);
+assert.match(html,/id="connection-status"/,'接続状態表示がありません');
+assert.equal(core.seed().store.adminPin,'1234','デモ管理者PIN初期値が不正です');
+assert.match(js,/給与計算対象/,'打刻時刻と給与計算対象時刻の表示がありません');
+assert.match(js,/data-quick-page="staff"/,'管理者画面の折りたたみ導線がありません');
+assert.match(js,/オフライン保存中/,'オフライン状態の案内がありません');
+assert.match(css,/\.manager-sections details/,'管理者メニューのアコーディオンCSSがありません');
+assert.match(css,/touch-action:manipulation/,'誤タップ対策CSSがありません');
 console.log('standard-demo tests: ok');
