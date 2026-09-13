@@ -44,3 +44,22 @@ button,.btn,.nav button,.role-grid button,summary{touch-action:manipulation}
   .quick-grid{grid-template-columns:1fr}
   .calc-time{display:block;margin:2px 0 0}
 }
+
+/* Mobile polish: clearer touch targets and compact manager navigation */
+@media(max-width:700px){
+  .manager-sections>p{margin-top:4px;color:var(--muted);font-size:12px}
+  .manager-sections details{padding:0;border:1px solid var(--line);border-radius:13px;margin:9px 0;overflow:hidden}
+  .manager-sections details:first-of-type{margin-top:10px}
+  .manager-sections summary{min-height:52px;display:flex;align-items:center;justify-content:space-between;padding:13px 14px;background:#f7fafb}
+  .manager-sections summary::after{float:none;margin-left:10px}
+  .manager-sections .quick-grid{padding:10px;margin:0;background:white}
+  .manager-sections .quick-grid .btn{min-height:48px;text-align:left}
+  .punch-actions .btn{min-height:76px;font-size:19px}
+  .punch-actions .btn-danger{border:2px solid #a92e2e}
+  .status-pill{white-space:nowrap}
+  input,select,.btn{min-height:44px}
+}
+@media(max-width:430px){
+  .manager-sections .quick-grid{grid-template-columns:1fr}
+  .manager-sections .quick-grid .btn{width:100%}
+}
