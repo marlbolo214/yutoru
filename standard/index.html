@@ -30,7 +30,7 @@
   <nav id="nav" class="nav no-print" aria-label="メインナビゲーション"></nav>
   <div id="connection-status" class="connection-status is-online no-print" role="status" aria-live="polite">オンライン</div>
   <main id="app" class="container"></main>
-  <dialog id="modal"><div id="modal-content"></div></dialog>
+  <dialog id="pin-modal" class="pin-modal"><form method="dialog" id="pin-form"><p class="eyebrow">SECURITY</p><h2 id="pin-title">管理者PIN</h2><p id="pin-help">4〜8桁のPINを入力してください。</p><input id="pin-input" class="pin-input" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off" aria-label="PIN"><p id="pin-error" class="pin-error" role="alert" aria-live="polite"></p><div class="pin-actions"><button type="button" class="btn" id="pin-cancel">キャンセル</button><button type="submit" class="btn btn-primary">認証</button></div></form></dialog><dialog id="modal"><div id="modal-content"></div></dialog>
   <footer class="no-print">YUTORU Standard — Light版とは独立した専用アプリです</footer>
   <script src="standard.js"></script>
 </body>
