@@ -34,14 +34,16 @@ function boot(w){const d=w.document,$=s=>d.querySelector(s),qsa=s=>Array.from(d.
  function requestRole(role){
   if(!ACCESS[role])return false;
   if(role==='punch'){setRole(role);return true}
-  const entered=w.prompt(role==='manager'?'管理者PINを入力してください':'管理者PINを入力してください（経理）','');
-  if(entered===null){if(state.role)$('#role-switch').value=state.role;return false}
-  if(String(entered)!==String(state.store.adminPin||'1234')){
-    w.alert('PINが違います。');
-    if(state.role)$('#role-switch').value=state.role;
-    return false;
-  }
-  setRole(role);return true
+  const modal=$('#pin-modal'),form=$('#pin-form'),input=$('#pin-input'),error=$('#pin-error');
+  $('#pin-title').textContent=role==='manager'?'管理者PIN':'経理PIN';
+  $('#pin-help').textContent='4〜8桁のPINを入力してください。';
+  input.value='';error.textContent='';
+  modal.showModal();
+  w.setTimeout(()=>input.focus(),50);
+  form.onsubmit=e=>{e.preventDefault();const entered=input.value.trim();if(!/^\\d{4,8}$/.test(entered)){error.textContent='4〜8桁の数字で入力してください。';input.focus();return}if(String(entered)!==String(state.store.adminPin||'1234')){error.textContent='PINが違います。もう一度入力してください。';input.value='';input.focus();return}modal.close();setRole(role)};
+  $('#pin-cancel').onclick=()=>{modal.close();if(state.role)$('#role-switch').value=state.role};
+  modal.oncancel=()=>{if(state.role)$('#role-switch').value=state.role};
+  return true
  }
  function route(){const [,requested,page]=w.location.hash.split('/');if(!state.role)return null;if(requested!==state.role||!authorize(state.role,page)){w.history.replaceState(null,'','#/'+state.role+'/'+ACCESS[state.role][0]);return{role:state.role,page:ACCESS[state.role][0]}}return{role:state.role,page}}
  function attendanceCards(edit){return state.attendance.map(a=>{const s=state.staff.find(x=>x.id===a.staff)||{},x=attendanceDetail(a,state.store);return`<article class="card work-card"><div class="row"><b>${a.date}　${esc(name(a.staff))}</b>${edit?`<button class="btn" data-att="${a.id}">修正</button>`:''}</div><dl><div><dt>勤務時間</dt><dd>${a.start}–${a.end}</dd></div><div><dt>休憩</dt><dd>${a.breakMin}分</dd></div><div><dt>実働</dt><dd>${hours(x.work)}</dd></div><div><dt>残業</dt><dd>${hours(x.overtime)}</dd></div><div><dt>早朝</dt><dd>${hours(x.early)}</dd></div><div><dt>深夜</dt><dd>${hours(x.night)}</dd></div><div><dt>交通費</dt><dd>${yen(fare(a,s))}</dd></div></dl></article>`}).join('')}
