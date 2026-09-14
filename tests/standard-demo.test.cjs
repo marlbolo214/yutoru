@@ -7,11 +7,17 @@ const css=fs.readFileSync('standard/standard.css','utf8');
 const js=fs.readFileSync('standard/standard.js','utf8');
 const vercel=JSON.parse(fs.readFileSync('standard/vercel.json','utf8'));
 assert.equal(crypto.createHash('sha256').update(fs.readFileSync('index.html')).digest('hex'),'b0960f38872dbd1fe02c1cf56ab5fb52a70097f1aa023bccbd9d72d061124628','Light版が変更されています');
-assert.match(html,/Standard DEMO/);assert.match(html,/standard\.js/);
+assert.match(html,/<title>YUTORU Standard DEMO<\/title>/);assert.match(html,/Standard DEMO/);assert.match(html,/standard\.js/);
+for(const [role,label,description] of [['punch','スタッフ','出勤・休憩・退勤'],['manager','オーナー・店長','スタッフ・勤怠・店舗管理'],['accounting','給与管理','給与計算・明細・出力']]){
+  assert.match(html,new RegExp(`data-role="${role}"[^>]*><b>${label}</b><span>${description}</span>`));
+  assert.match(html,new RegExp(`<option value="${role}">${label}</option>`));
+}
 assert.equal(core.STORAGE_KEY,'yutoru_standard_app_v1');assert.doesNotMatch(core.STORAGE_KEY,/light/i);
 assert.equal(vercel.cleanUrls,true);assert.equal(vercel.trailingSlash,false);
 assert.deepEqual(core.ACCESS.punch,['punch']);
 assert.ok(!core.authorize('punch','payroll'));assert.ok(!core.authorize('manager','payroll'));assert.ok(core.authorize('accounting','payroll'));assert.ok(core.authorize('accounting','history'));
+assert.equal(core.requiresPin('punch'),false);assert.equal(core.requiresPin('manager'),true);assert.equal(core.requiresPin('accounting'),true);
+assert.equal(core.verifyPin('punch','bad','1234'),true);assert.equal(core.verifyPin('manager','1234','1234'),true);assert.equal(core.verifyPin('accounting','1234','1234'),true);assert.equal(core.verifyPin('manager','bad','1234'),false);
 const state=core.seed();for(let i=0;i<1000;i++)state.staff.push({id:'x'+i,name:'x'});assert.equal(state.staff.length,1004,'人数上限なし');
 const normal=core.attendanceDetail({start:'09:00',end:'18:00',breakMin:60});assert.equal(normal.work,480);assert.equal(normal.overtime,0);
 const noBreak=core.attendanceDetail({start:'09:00',end:'19:00',breakMin:0});assert.equal(noBreak.work,600);assert.equal(noBreak.overtime,120);
