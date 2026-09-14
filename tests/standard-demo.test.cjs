@@ -7,7 +7,7 @@ const css=fs.readFileSync('standard/standard.css','utf8');
 const js=fs.readFileSync('standard/standard.js','utf8');
 const vercel=JSON.parse(fs.readFileSync('standard/vercel.json','utf8'));
 assert.equal(crypto.createHash('sha256').update(fs.readFileSync('index.html')).digest('hex'),'b0960f38872dbd1fe02c1cf56ab5fb52a70097f1aa023bccbd9d72d061124628','Light版が変更されています');
-assert.match(html,/<title>YUTORU Standard<\/title>/);assert.doesNotMatch(html,/Standard DEMO/);assert.match(html,/standard\.js/);
+assert.match(html,/<title>YUTORU Standard DEMO<\/title>/);assert.match(html,/Standard DEMO/);assert.match(html,/standard\.js/);
 for(const [role,label,description] of [['punch','スタッフ','出勤・休憩・退勤'],['manager','オーナー・店長','スタッフ・勤怠・店舗管理'],['accounting','給与管理','給与計算・明細・出力']]){
   assert.match(html,new RegExp(`data-role="${role}"[^>]*><b>${label}</b><span>${description}</span>`));
   assert.match(html,new RegExp(`<option value="${role}">${label}</option>`));
