@@ -40,7 +40,7 @@ function boot(w){const d=w.document,$=s=>d.querySelector(s),qsa=s=>Array.from(d.
   input.value='';error.textContent='';
   modal.showModal();
   w.setTimeout(()=>input.focus(),50);
-  form.onsubmit=e=>{e.preventDefault();const entered=input.value.trim();if(!/^\\d{4,8}$/.test(entered)){error.textContent='4〜8桁の数字で入力してください。';input.focus();return}const expected=role==='manager'?(state.store.adminPin||'1234'):(state.store.accountingPin||state.store.adminPin||'5678');if(String(entered)!==String(expected)){error.textContent='PINが違います。もう一度入力してください。';input.value='';input.focus();return}modal.close();setRole(role)};
+  form.onsubmit=e=>{e.preventDefault();const entered=input.value.trim();if(!/^\d{4,8}$/.test(entered)){error.textContent='4〜8桁の数字で入力してください。';input.focus();return}const expected=role==='manager'?(state.store.adminPin||'1234'):(state.store.accountingPin||state.store.adminPin||'5678');if(String(entered)!==String(expected)){error.textContent='PINが違います。もう一度入力してください。';input.value='';input.focus();return}modal.close();setRole(role)};
   $('#pin-cancel').onclick=()=>{modal.close();if(state.role)$('#role-switch').value=state.role};
   modal.oncancel=()=>{if(state.role)$('#role-switch').value=state.role};
   return true
