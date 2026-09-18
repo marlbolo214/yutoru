@@ -7,7 +7,7 @@ const seed=()=>({schemaVersion:1,role:null,store:{name:'YUTORU DEMO STORE',early
  {id:'s2',name:'佐藤 花子',rate:1300,overtimeRate:.25,earlyRate:.25,nightRate:.25,transport:500,other:3000},
  {id:'s3',name:'鈴木 一郎',rate:1250,overtimeRate:.25,earlyRate:.25,nightRate:.25,transport:0,other:0},
  {id:'s4',name:'田中 美咲',rate:1400,overtimeRate:.25,earlyRate:.25,nightRate:.25,transport:null,other:5000}],attendance:[
- {id:1,staff:'s1',date:'2026-09-01',start:'09:00',end:'18:00',breakMin:60,transport:null},
+ {id:1,staff:'s1',date:'2026-09-01',start:'10:35',end:'22:02',breakMin:113,transport:null},
  {id:2,staff:'s2',date:'2026-09-02',start:'09:00',end:'19:30',breakMin:60,transport:800},
  {id:3,staff:'s3',date:'2026-09-03',start:'05:00',end:'13:00',breakMin:45,transport:null},
  {id:4,staff:'s4',date:'2026-09-04',start:'18:00',end:'02:00',breakMin:60,transport:700},
