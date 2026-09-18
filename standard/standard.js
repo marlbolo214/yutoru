@@ -8,10 +8,10 @@ const seed=()=>({schemaVersion:1,role:null,store:{name:'YUTORU DEMO STORE',early
  {id:'s3',name:'鈴木 一郎',rate:1250,overtimeRate:.25,earlyRate:.25,nightRate:.25,transport:0,other:0},
  {id:'s4',name:'田中 美咲',rate:1400,overtimeRate:.25,earlyRate:.25,nightRate:.25,transport:null,other:5000}],attendance:[
  {id:1,staff:'s1',date:'2026-09-01',start:'10:35',end:'22:02',breakMin:113,transport:null},
- {id:2,staff:'s2',date:'2026-09-02',start:'09:00',end:'19:30',breakMin:60,transport:800},
- {id:3,staff:'s3',date:'2026-09-03',start:'05:00',end:'13:00',breakMin:45,transport:null},
- {id:4,staff:'s4',date:'2026-09-04',start:'18:00',end:'02:00',breakMin:60,transport:700},
- {id:5,staff:'s2',date:'2026-09-05',start:'22:00',end:'06:00',breakMin:0,transport:0}],punches:[],history:[]});
+ {id:2,staff:'s2',date:'2026-09-02',start:'08:17',end:'19:46',breakMin:67,transport:800},
+ {id:3,staff:'s3',date:'2026-09-03',start:'05:13',end:'14:28',breakMin:52,transport:null},
+ {id:4,staff:'s4',date:'2026-09-04',start:'18:37',end:'02:13',breakMin:41,transport:700},
+ {id:5,staff:'s2',date:'2026-09-05',start:'21:43',end:'06:11',breakMin:37,transport:0}],punches:[],history:[]});
 const mins=t=>{const [h,m]=t.split(':').map(Number);return h*60+m};
 const overlap=(s,e,a,b)=>Math.max(0,Math.min(e,b)-Math.max(s,a));
 function windowOverlap(start,end,from,to){let a=mins(from),b=mins(to);if(b<=a)b+=1440;return[-1440,0,1440].reduce((sum,shift)=>sum+overlap(start,end,a+shift,b+shift),0)}
