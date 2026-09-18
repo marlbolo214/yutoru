@@ -3156,3 +3156,21 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 </body></html>
+
+<style id="yutoruStandardSinglePlanCleanup">
+/* Standard販売デモは1プラン表示に統一。旧Founders/Plus/Light UIは非表示。 */
+#yutoruPlanBar,#demoPlanSwitcher,#plusAdminPanel,#plusSettingsBtn,#licenseBadge,#v34Insurance,#v34Plus,#v33HistoryFloating,#v33HistoryPanel{display:none!important;visibility:hidden!important;pointer-events:none!important}
+</style>
+<script id="yutoruStandardSinglePlanRuntime">
+(()=>{
+  function enforceStandardDemo(){
+    if(!new URLSearchParams(location.search).get('demo')) return;
+    document.documentElement.dataset.plan='standard';
+    if(window.SALES_TENANT){window.SALES_TENANT.plan='standard';window.SALES_TENANT.monthlyPrice=1980;}
+    document.querySelectorAll('body *').forEach(el=>{
+      if(el.children.length===0 && /Light版とは独立した専用アプリ/.test(el.textContent||'')) el.textContent=(el.textContent||'').replace(/\s*—?\s*Light版とは独立した専用アプリです?/g,'');
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',enforceStandardDemo);else enforceStandardDemo();
+})();
+</script>
