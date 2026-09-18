@@ -259,7 +259,7 @@ body[data-device-role="punch"] #punchTerminalBadge{display:block}
 </style>
 <div id="punchTerminalBadge">🏪 店舗打刻端末モード｜スタッフの打刻専用</div>
 <div class="top"><h2>かんたん勤怠管理</h2><div id="clock"></div></div><div class="w">
-<div class="c no-print"><b>スタッフ</b><select id="staff"><option value="">読み込み中...</option></select><p id="status"></p><p id="cloudStatus" class="note">クラウド：未接続（端末内保存で利用中）</p><div class="g"><button class="in" onclick="stamp('出勤')">出勤</button><button class="bs" onclick="stamp('休憩開始')">休憩開始</button><button class="be" onclick="stamp('休憩終了')">休憩終了</button><button class="out" onclick="stamp('退勤')">退勤</button></div><p class="note">出勤は15分単位で繰り上げ／休憩開始は切り下げ／休憩終了は繰り上げ／退勤は切り下げ。修正画面・保存・給与計算も同じ時刻で統一</p></div>
+<div class="c no-print"><b>スタッフ</b><select id="staff"><option value="">読み込み中...</option></select><p id="status"></p><p id="cloudStatus" class="note">クラウド：未接続（端末内保存で利用中）</p><div class="g"><button class="in" onclick="stamp('出勤')">出勤</button><button class="bs" onclick="stamp('休憩開始')">休憩開始</button><button class="be" onclick="stamp('休憩終了')">休憩終了</button><button class="out" onclick="stamp('退勤')">退勤</button></div><p class="note">出勤・休憩・退勤は実際の打刻時刻を1分単位で記録し、勤怠集計も1分単位で計算します。</p></div>
 <div class="c"><b>本日の勤務</b><div id="log"></div><div class="m"><div class="metric">実働<b id="work">--</b></div><div class="metric">休憩<b id="brk">--</b></div><div class="metric">残業（8時間超）<b id="ot">--</b></div><div class="metric">早朝<b id="early">--</b></div><div class="metric">深夜<b id="night">--</b></div></div></div>
 <div class="c"><b>月間勤務（21日〜翌20日）</b><p id="period"></p><div class="tw"><table><thead><tr><th>日付</th><th>実働</th><th>休憩</th><th>残業</th><th>深夜</th></tr></thead><tbody id="monthly"></tbody><tfoot id="totals"></tfoot></table></div></div>
 <div class="c no-print"><b>管理者メニュー</b><div id="pb" class="row"><input id="pin" type="password" placeholder="管理者PIN" style="flex:1"><button class="admin" onclick="login()">開く</button></div><div id="ad" class="hide"><div class="row"><input id="nn" placeholder="新しいスタッフ名" style="flex:1"><button class="admin" onclick="add()">追加</button></div><div id="list"></div><hr><b>クラウド保存</b>
@@ -276,7 +276,7 @@ body[data-device-role="punch"] #punchTerminalBadge{display:block}
 <hr><b>交通費設定</b>
 <p class="note">スタッフごとに「1日あたりの交通費」を登録します。締め日集計では 出勤日数 × 1日交通費 を自動加算します。</p>
 <div id="transportRows"></div><div class="row actions"><button onclick="saveTransports()">交通費を保存</button></div><p id="transportMsg" class="note"></p>
-<hr><b>打刻の修正・削除</b><p class="note">スタッフと日付を選んで、過去の出勤・休憩・退勤時刻を「時・分」で見やすく修正できます。分は15分単位（00・15・30・45）です。</p><div class="row"><select id="editStaff" style="flex:1"></select><input id="editDate" type="date" style="flex:1"><button class="admin" onclick="loadEdit()">読み込む</button></div><div id="editRows"></div><div class="row actions"><button onclick="addEditRow()">打刻を追加</button><button onclick="saveEdits()">修正を保存</button></div><p id="editMsg" class="note"></p><hr><b>締め日用・全スタッフ一覧</b>
+<hr><b>打刻の修正・削除</b><p class="note">スタッフと日付を選んで、過去の出勤・休憩・退勤時刻を「時・分」で見やすく修正できます。分は1分単位で修正できます。</p><div class="row"><select id="editStaff" style="flex:1"></select><input id="editDate" type="date" style="flex:1"><button class="admin" onclick="loadEdit()">読み込む</button></div><div id="editRows"></div><div class="row actions"><button onclick="addEditRow()">打刻を追加</button><button onclick="saveEdits()">修正を保存</button></div><p id="editMsg" class="note"></p><hr><b>締め日用・全スタッフ一覧</b>
 <p class="note">スタッフごとに給与内訳をカード表示。残業・深夜の割増金額も色分けして確認できます。</p>
 <div class="payDash">
   <div class="payLegend">
@@ -611,7 +611,7 @@ function earlyMinutesForRows(rows){
 
   let n=0;
   for(let m=st;m<en;m++) if(inEarly(m) && !inBreak(m)) n++;
-  return masterSettings().roundUnit===15?Math.floor(n/15)*15:n;
+  return n;
 }
 function staffEarlySummary(x,name,wage){
   let rules=yutoruWorkRules(), mode=rules.earlyMode||"none", value=Number(rules.earlyValue||0);
@@ -632,7 +632,7 @@ function staffEarlySummary(x,name,wage){
 function payrollDetail(t,wage,transportPerDay=0,earlyAllowance=0){
   wage=Number(wage)||0;
   transportPerDay=Number(transportPerDay)||0;
-  let work=t[1]||0,ot=t[3]||0,night=t[4]||0;work=Math.floor(work/15)*15;
+  let work=t[1]||0,ot=t[3]||0,night=t[4]||0;
   let base=work/60*wage;
   let overtimePremium=ot/60*wage*.25;
   let nightPremium=night/60*wage*.25;
@@ -664,46 +664,16 @@ function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'
 function fillStaffSelect(el,names,keep){if(!el)return;el.replaceChildren();names.forEach(n=>{const op=document.createElement('option');op.value=n;op.textContent=n;el.appendChild(op)});if(keep&&names.includes(keep))el.value=keep;else if(names.length)el.selectedIndex=0}
 function rs(){const a=staff();const main=Q('staff');const o=main?main.value:'';fillStaffSelect(main,a,o);if(Q('editStaff')){const eo=Q('editStaff').value;fillStaffSelect(Q('editStaff'),a,eo)}rl();renderWages();render();allSummary()}
 function punchTime(kind){
-  let d=new Date(),h=d.getHours(),m=d.getMinutes();
-
-  if(kind==='出勤'){
-    // 出勤：15分単位で繰り上げ
-    m=Math.ceil(m/15)*15;
-  }else if(kind==='退勤'){
-    // 退勤：15分単位で切り下げ
-    m=Math.floor(m/15)*15;
-  }else if(kind==='休憩開始'){
-    // 休憩開始：15分単位で切り下げ
-    m=Math.floor(m/15)*15;
-  }else if(kind==='休憩終了'){
-    // 休憩終了：15分単位で繰り上げ
-    m=Math.ceil(m/15)*15;
-  }else{
-    m=Math.round(m/15)*15;
-  }
-
-  if(m===60){h++;m=0}
-  if(h<9){h=9;m=0}
-
+  const d=new Date(),h=d.getHours(),m=d.getMinutes();
   return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')
 }
 function stamp(k){let x=JSON.parse(localStorage.getItem(DK)||'{}'),s=Q('staff').value,day=iso(new Date());if(!s)return;x[s]??={};x[s][day]??=[];x[s][day].push([k,punchTime(k)]);localStorage.setItem(DK,JSON.stringify(x));render();allSummary();cloudAfterDayChange(s,day,x[s][day])}
 function mins(t){let a=t.split(':').map(Number);return a[0]*60+a[1]} function fmt(n){if(n==null)return'--';n=Math.max(0,Math.round(n));return Math.floor(n/60)+':'+String(n%60).padStart(2,'0')}
-function roundPunchTime(kind,time){
-  if(!time)return time;
-  let [h,m]=time.split(':').map(Number);
-  if(kind==='出勤' || kind==='休憩終了'){
-    m=Math.ceil(m/15)*15;
-  }else if(kind==='退勤' || kind==='休憩開始'){
-    m=Math.floor(m/15)*15;
-  }
-  if(m===60){h++;m=0}
-  return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
-}
+function roundPunchTime(kind,time){ return time; }
 
 function calc(a){
-  // 計算時も、出勤↑・休憩開始↓・休憩終了↑・退勤↓ の15分ルールを必ず適用
-  let aa=(a||[]).map(v=>[v[0],roundPunchTime(v[0],v[1])]);
+  // 実際の打刻時刻をそのまま1分単位で計算する
+  let aa=(a||[]).map(v=>[v[0],v[1]]);
   // 修正画面や旧データで「出勤」が2回になっている場合、退勤が無ければ最後の出勤を退勤として扱う。
   // これにより休憩なしの「出勤→退勤」だけの日も全スタッフ共通で実働計算できる。
   if(!aa.some(v=>v[0]==='退勤')){
@@ -730,13 +700,10 @@ function calc(a){
   if(en<st)en+=1440;
 
   let work=Math.max(0,en-st-b);
-  work=Math.floor(work/15)*15;
 
   let overtime=Math.max(0,work-480);
-  overtime=Math.floor(overtime/15)*15;
 
   let night=Math.max(0,en-Math.max(st,1320)-nb);
-  night=Math.floor(night/15)*15;
 
   return[work,b,overtime,night];
 }
@@ -1075,7 +1042,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <div class="buttons"><button id="msCancel" type="button">閉じる</button><button id="msSave" class="msSave" type="button">保存</button></div><p id="msMsg"></p></div></div>
 <script>
 const MASTER_SETTINGS_KEY='yutoru_distribution_demo_settings_v1';
-function masterSettings(){try{return Object.assign({roundUnit:15,closeDay:20,overtimeHours:8,nightStart:'22:00',nightEnd:'05:00'},JSON.parse(localStorage.getItem(MASTER_SETTINGS_KEY)||'{}'))}catch(e){return {roundUnit:15,closeDay:20,overtimeHours:8,nightStart:'22:00',nightEnd:'05:00'}}}
+function masterSettings(){try{return Object.assign({roundUnit:1,closeDay:20,overtimeHours:8,nightStart:'22:00',nightEnd:'05:00'},JSON.parse(localStorage.getItem(MASTER_SETTINGS_KEY)||'{}'))}catch(e){return {roundUnit:1,closeDay:20,overtimeHours:8,nightStart:'22:00',nightEnd:'05:00'}}}
 masterSetupBtn.onclick=()=>{let s=masterSettings();msShop.value=s.shopName||'';msRound.value=s.roundUnit||15;msClose.value=s.closeDay||20;msOt.value=s.overtimeHours||8;msNightStart.value=s.nightStart||'22:00';msNightEnd.value=s.nightEnd||'05:00';msUrl.value=s.supabaseUrl||'';msKey.value=s.supabaseKey||'';masterSetup.classList.add('open')};
 msCancel.onclick=()=>masterSetup.classList.remove('open');
 msSave.onclick=()=>{localStorage.setItem(MASTER_SETTINGS_KEY,JSON.stringify({shopName:msShop.value.trim(),roundUnit:+msRound.value,closeDay:+msClose.value,overtimeHours:+msOt.value,nightStart:msNightStart.value,nightEnd:msNightEnd.value,supabaseUrl:msUrl.value.trim(),supabaseKey:msKey.value.trim()}));msMsg.textContent='保存しました ✓';};
@@ -3067,7 +3034,7 @@ calc=function(rows){
  const rules=typeof yutoruWorkRules==='function'?yutoruWorkRules():{},ns=mins(rules.nightStart||masterSettings().nightStart||'22:00'),ne=mins(rules.nightEnd||masterSettings().nightEnd||'05:00');
  const inWindow=(minute,a,z)=>{const md=((minute%1440)+1440)%1440;return a===z?false:(a<z?md>=a&&md<z:md>=a||md<z)};
  let night=0;for(let m=st;m<en;m++)if(inWindow(m,ns,ne)&&!breaks.some(q=>m>=q[0]&&m<q[1]))night++;
- let ot=Math.max(0,work-8*60);if(masterSettings().roundUnit===15){work=Math.floor(work/15)*15;b=Math.floor(b/15)*15;ot=Math.floor(ot/15)*15;night=Math.floor(night/15)*15}return[work,b,ot,night]
+ let ot=Math.max(0,work-8*60);if(masterSettings().roundUnit===15){b=Math.floor(b/15)*15;ot=Math.floor(ot/15)*15;night=Math.floor(night/15)*15}return[work,b,ot,night]
 };
 range=function(){let n=new Date(),close=Math.min(31,Math.max(1,Number(masterSettings().closeDay)||20));let thisClose=new Date(n.getFullYear(),n.getMonth(),Math.min(close,new Date(n.getFullYear(),n.getMonth()+1,0).getDate()));let en=n<=thisClose?thisClose:new Date(n.getFullYear(),n.getMonth()+1,Math.min(close,new Date(n.getFullYear(),n.getMonth()+2,0).getDate()));let prev=new Date(en.getFullYear(),en.getMonth()-1,Math.min(close,new Date(en.getFullYear(),en.getMonth(),0).getDate()));let st=new Date(prev);st.setDate(st.getDate()+1);return[st,en]};
 
@@ -3080,11 +3047,11 @@ function setupDemoUI(){
  document.title='YUTORU｜勤怠管理デモ';
  let monthCard=Q('monthly').closest('.c');monthCard.querySelector('b').textContent='月間勤怠';monthCard.querySelector('thead').innerHTML='<tr><th>日付</th><th>スタッフ</th><th>出勤</th><th>退勤</th><th>休憩</th><th>実働</th><th>残業</th><th>早朝</th><th>深夜</th><th>交通費</th></tr>';monthCard.querySelector('table').classList.add('monthlyDemo');
  let ad=Q('ad'),panel=document.createElement('div');panel.className='demoAdmin';panel.innerHTML='<hr><h3>店舗設定</h3><div class="settingsGrid"><label>打刻単位<select id="demoRound"><option value="1">1分単位</option><option value="15">15分単位</option></select></label><label>締め日<select id="demoClose">'+Array.from({length:31},(_,i)=>'<option value="'+(i+1)+'">'+(i===30?'末日':i+1+'日')+'</option>').join('')+'</select></label></div><button class="admin" style="width:100%;margin-top:10px" onclick="saveDemoSettings()">店舗設定を保存</button><h3>管理者パスワード</h3><div class="row"><input id="newAdminPin" type="password" minlength="4" placeholder="新しいパスワード（4文字以上）"><button class="admin" onclick="changeAdminPin()">変更</button></div><h3>販売デモデータ</h3><p class="note">専用の印を付けて作成するため、デモデータだけを安全に削除できます。</p><div class="row demoActions"><button onclick="createDemoData()">デモデータを作成</button><button class="danger" onclick="deleteDemoData()">デモデータを削除</button></div>';ad.prepend(panel);
- let s=masterSettings();Q('demoRound').value=String([1,15].includes(Number(s.roundUnit))?s.roundUnit:15);Q('demoClose').value=String(s.closeDay||20);
+ let s=masterSettings();Q('demoRound').value='1';Q('demoRound').disabled=true;Q('demoClose').value=String(s.closeDay||20);
  let cloudHeading=[...ad.querySelectorAll('b')].find(e=>e.textContent.includes('クラウド保存'));if(cloudHeading){let cur=cloudHeading;while(cur&&!(cur.tagName==='HR'&&cur!==cloudHeading.previousElementSibling)){let next=cur.nextElementSibling;cur.style.display='none';cur=next;if(cur?.tagName==='HR')break}}
  document.querySelectorAll('#topPlanSelect,#demoPlanSelect').forEach(e=>e.setAttribute('aria-hidden','true'));
 }
-function saveDemoSettings(){let s=masterSettings();s.roundUnit=Number(Q('demoRound').value);s.closeDay=Number(Q('demoClose').value);delete s.supabaseUrl;delete s.supabaseKey;localStorage.setItem(MASTER_SETTINGS_KEY,JSON.stringify(s));render();allSummary();alert('店舗設定を保存しました')}
+function saveDemoSettings(){let s=masterSettings();s.roundUnit=1;s.closeDay=Number(Q('demoClose').value);delete s.supabaseUrl;delete s.supabaseKey;localStorage.setItem(MASTER_SETTINGS_KEY,JSON.stringify(s));render();allSummary();alert('店舗設定を保存しました')}
 login=function(){let pin=localStorage.getItem(ADMIN_PIN_KEY)||'1234';if(Q('pin').value===pin){Q('pb').classList.add('hide');Q('ad').classList.remove('hide');defaultEditDate();rs()}else alert('パスワードが違います')};
 function changeAdminPin(){let p=Q('newAdminPin').value;if(p.length<4){alert('4文字以上で設定してください');return}localStorage.setItem(ADMIN_PIN_KEY,p);Q('newAdminPin').value='';alert('管理者パスワードを変更しました')}
 function createDemoData(){let names=['山田 太郎','佐藤 花子','鈴木 一郎'],a=staff(),x=JSON.parse(localStorage.getItem(DK)||'{}'),w=wages(),tr=transports(),dt=dailyTransports(),marks=[],created=[];let samples=[[['出勤','09:00'],['休憩開始','12:00'],['休憩終了','13:00'],['退勤','18:00']],[['出勤','18:00'],['休憩開始','21:00'],['休憩終了','21:30'],['退勤','24:00']],[['出勤','19:00'],['退勤','22:30']]];names.forEach((n,i)=>{if(!a.includes(n)){a.push(n);created.push(n)}x[n]??={};dt[n]??={};for(let ago=1;ago<=3;ago++){let d=new Date();d.setDate(d.getDate()-ago);let day=iso(d);x[n][day]=samples[(i+ago)%samples.length];dt[n][day]=ago===2?0:(i===1?500:802);marks.push([n,day])}w[n]=[1200,1150,1300][i];tr[n]=[802,500,600][i]});localStorage.setItem(SK,JSON.stringify(a));localStorage.setItem(DK,JSON.stringify(x));localStorage.setItem(WK,JSON.stringify(w));localStorage.setItem(TK,JSON.stringify(tr));localStorage.setItem(DAILY_TRANSPORT_KEY,JSON.stringify(dt));localStorage.setItem(DEMO_MARK_KEY,JSON.stringify({days:marks,created}));rs();alert('デモデータを作成しました')}
@@ -3168,7 +3135,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   const shifts=[[['出勤','09:00'],['休憩開始','12:00'],['休憩終了','13:00'],['退勤','18:00']],[['出勤','08:00'],['休憩開始','12:00'],['休憩終了','12:45'],['退勤','18:30']],[['出勤','05:30'],['休憩開始','09:00'],['休憩終了','09:30'],['退勤','14:00']],[['出勤','21:00'],['休憩開始','23:30'],['休憩終了','24:00'],['退勤','05:30']],[['出勤','22:00'],['退勤','24:00']],[['出勤','12:00'],['休憩開始','16:00'],['休憩終了','16:30'],['退勤','21:00']]];
   const data={},daily={};sampleNames.forEach((name,person)=>{data[name]={};daily[name]={};dates.forEach((date,i)=>{if(i%3===person||i===person+3){data[name][date]=shifts[i].map(row=>row.slice());daily[name][date]=i===5?0:[600,500,700][person]}})});
   localStorage.setItem(SK,JSON.stringify(sampleNames));localStorage.setItem(DK,JSON.stringify(data));localStorage.setItem(TK,JSON.stringify({'山田 太郎':600,'佐藤 花子':500,'鈴木 一郎':700}));localStorage.setItem(DAILY_TRANSPORT_KEY,JSON.stringify(daily));
-  localStorage.setItem(MASTER_SETTINGS_KEY,JSON.stringify({roundUnit:15,closeDay:20,overtimeHours:8,nightStart:'22:00',nightEnd:'05:00'}));localStorage.setItem('yutoru_distribution_demo_work_rules_v1',JSON.stringify({workStart:'00:00',workEnd:'24:00',earlyStart:'05:00',earlyEnd:'08:00',earlyMode:'none',earlyValue:0,nightStart:'22:00',nightEnd:'05:00'}));
+  localStorage.setItem(MASTER_SETTINGS_KEY,JSON.stringify({roundUnit:1,closeDay:20,overtimeHours:8,nightStart:'22:00',nightEnd:'05:00'}));localStorage.setItem('yutoru_distribution_demo_work_rules_v1',JSON.stringify({workStart:'00:00',workEnd:'24:00',earlyStart:'05:00',earlyEnd:'08:00',earlyMode:'none',earlyValue:0,nightStart:'22:00',nightEnd:'05:00'}));
   localStorage.setItem(ADMIN_PIN_KEY,'1234');localStorage.setItem(DEMO_MARK_KEY,JSON.stringify({seeded:true,names:sampleNames,dates}));localStorage.setItem(STARTED_KEY,'1');
  }
  function refresh(){if(typeof rs==='function')rs();const settings=masterSettings(),round=Q('demoRound'),close=Q('demoClose');if(round)round.value=String(settings.roundUnit);if(close)close.value=String(settings.closeDay)}
